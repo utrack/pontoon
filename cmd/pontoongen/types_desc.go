@@ -12,6 +12,7 @@ const (
 )
 
 type typeDesc struct {
+	id       string
 	name     string
 	doc      string
 	isScalar bool
@@ -33,7 +34,7 @@ type descMap struct {
 }
 
 type descStruct struct {
-	embeds []*typeDesc
+	embeds []descField
 	fields []descField
 }
 

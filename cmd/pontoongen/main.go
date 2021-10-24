@@ -6,9 +6,10 @@ import (
 	"go/types"
 	"log"
 
-	"github.com/ryboe/q"
 	"golang.org/x/tools/go/packages"
 )
+
+const descPkgName = "github.com/utrack/pontoon/sdesc"
 
 func main() {
 	dir := flag.String("dir", ".", "directory to parse files from")
@@ -29,12 +30,10 @@ func main() {
 			packages.NeedExportsFile,
 		Dir: *dir,
 	}
-	pkgs, err := packages.Load(&pcfg, ".", "gitlab.com/HnBI/shared-projects/go/platform/bootstrap/desc")
+	pkgs, err := packages.Load(&pcfg, ".", descPkgName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	q.Q(len(pkgs))
-	q.Q("pkg loaded")
 
 	if len(pkgs) != 2 {
 		pkgNames := []string{}
@@ -48,7 +47,7 @@ func main() {
 	var pkg *packages.Package
 
 	for _, p := range pkgs {
-		if p.String() == "gitlab.com/HnBI/shared-projects/go/platform/bootstrap/desc" {
+		if p.String() == descPkgName {
 			descPkg = p
 		}
 		pkg = p
@@ -87,7 +86,6 @@ func main() {
 		}
 		svcs = append(svcs, *svc)
 	}
-	q.Q(svcs)
 
 	buf, err := genOpenAPI(svcs, pkg.String())
 	if err != nil {
@@ -102,6 +100,5 @@ func getDescType(pkg *packages.Package) (*types.Interface, *types.Interface, err
 
 	declMux := pkg.Types.Scope().Lookup("HTTPRouter")
 	tMux := declMux.Type().Underlying().(*types.Interface)
-	q.Q(t.Method(0).FullName())
 	return t, tMux, nil
 }

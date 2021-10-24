@@ -16,6 +16,7 @@ require (
 
 require (
 	github.com/getkin/kin-openapi v0.80.0 // indirect
+	github.com/ggicci/httpin v0.5.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect

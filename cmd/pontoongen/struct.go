@@ -23,7 +23,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 
 	switch t := tt.(type) {
 	case *types.Basic:
-		return &typeDesc{isScalar: true, name: t.Name()}, nil
+		return &typeDesc{isScalar: true, id: t.Name(), name: t.Name()}, nil
 	case *types.Chan:
 		return nil, nil
 	case *types.Slice:
@@ -32,6 +32,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "creating typedesc for '%v'", t.String())
 		}
 		return &typeDesc{
+			id:   "[]" + ut.id,
 			name: t.String(),
 			isSlice: &descSlice{
 				t: ut,
@@ -47,6 +48,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "parsing value type of map '%v'", t.String())
 		}
 		return &typeDesc{
+			id:   "map[" + key.id + "]" + value.id,
 			name: t.String(),
 			isMap: &descMap{
 				key:   key,
@@ -58,6 +60,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "parsing ptr value of '%v'", t.String())
 		}
 		return &typeDesc{
+			id:    "*" + ut.id,
 			name:  t.String(),
 			isPtr: ut,
 		}, nil
@@ -81,6 +84,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	st := t.Underlying().(*types.Struct)
 
 	ret := typeDesc{
+		id:       t.Obj().Pkg().Path() + "." + t.Obj().Name(),
 		name:     t.Obj().Pkg().Name() + "." + t.Obj().Name(),
 		doc:      docs.Doc,
 		isStruct: &descStruct{},
@@ -95,27 +99,22 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	for i := 0; i < st.NumFields(); i++ {
 		f := st.Field(i)
 
-		if f.Embedded() {
-			etd, err := b.getTypeDescCached(f.Type())
-			if err != nil {
-				return nil, errors.Wrapf(err, "processing embedded field type '%v'", f.Name())
-			}
-			ret.isStruct.embeds = append(ret.isStruct.embeds, etd)
-			continue
-		}
-
 		fd := descField{
-			name: f.Name(),
 			doc:  docs.DocsByFields[f.Name()],
 			tags: docs.TagsByFields[f.Name()],
 		}
-
 		ft, err := b.getTypeDescCached(f.Type())
 		if err != nil {
 			return nil, errors.Wrapf(err, "parsing field '%v'", f.Name())
 		}
 		fd.t = ft
 
+		if f.Embedded() {
+			ret.isStruct.embeds = append(ret.isStruct.embeds, fd)
+			continue
+		}
+
+		fd.name = f.Name()
 		ret.isStruct.fields = append(ret.isStruct.fields, fd)
 	}
 	return &ret, nil

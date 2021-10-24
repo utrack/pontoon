@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -29,7 +30,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
-				_, err := genRefFieldStruct(h.inout.inType)
+				err := genInSchema(h.inout.inType, op)
 				if err != nil {
 					return nil, errors.Wrap(err, "generating input schema")
 				}
@@ -39,10 +40,11 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "generating output schema")
 			}
-			if out != nil {
-				op.Responses = openapi3.NewResponses()
-				op.Responses.Default().Ref = out.Ref
-			}
+
+			rsp := openapi3.NewResponse()
+			rsp = rsp.WithDescription("success")
+			rsp.Content = openapi3.NewContentWithJSONSchemaRef(out)
+			op.AddResponse(200, rsp)
 			p.SetOperation(h.op, op)
 		}
 	}
@@ -55,7 +57,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 		}
 		sr, ok := cacheSchemaRefs[t]
 		if !ok {
-			panic("not found sr for " + t.name)
+			continue
 		}
 
 		comp.Schemas[t.name] = openapi3.NewSchemaRef("", sr.Value)
@@ -71,6 +73,10 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 	root.Components = comp
 	root.Paths = paths
 
+	err := root.Validate(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate the spec")
+	}
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
 		panic(err)
@@ -80,10 +86,74 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 var cacheSchemaRefs = map[*typeDesc]*openapi3.SchemaRef{}
 
+func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
+	for _, f := range t.isStruct.embeds {
+		q.Q(f.t.id)
+		if f.t.id == "github.com/ggicci/httpin.JSONBody" {
+			rs, err := genRefFieldStruct(t)
+			if err != nil {
+				return err
+			}
+
+			body := openapi3.NewRequestBody().WithJSONSchemaRef(rs)
+			sc.RequestBody = &openapi3.RequestBodyRef{
+				Value: body,
+			}
+			continue
+		}
+		err := genInSchema(f.t, sc)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, f := range t.isStruct.fields {
+		props := genInProps(f.tags)
+		if props == nil {
+			continue
+		}
+
+		fs, err := genFieldSchema(f)
+		if err != nil {
+			return err
+		}
+
+		switch props.location {
+		case "body":
+			body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(f.doc)
+			sc.RequestBody = &openapi3.RequestBodyRef{
+				Value: body,
+			}
+		case "query":
+			q := openapi3.NewQueryParameter(props.name).
+				WithSchema(fs.Value).
+				WithRequired(props.required).
+				WithDescription(f.doc)
+
+			sc.AddParameter(q)
+		case "header":
+			q := openapi3.NewHeaderParameter(props.name).
+				WithSchema(fs.Value).
+				WithRequired(props.required).
+				WithDescription(f.doc)
+			sc.AddParameter(q)
+		case "path":
+			q := openapi3.NewPathParameter(props.name).
+				WithSchema(fs.Value).
+				WithRequired(props.required).
+				WithDescription(f.doc)
+			sc.AddParameter(q)
+		default:
+			return errors.Errorf("unknown in source type '%v' for field '%v'", props.location, f.name)
+		}
+	}
+	return nil
+}
+
 func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 
 	if f.t.isScalar {
-		ret, err := genRefFieldScalar(*f.t)
+		ret, err := genRefFieldScalar(f.t)
 		if err != nil {
 			return nil, err
 		}
@@ -126,13 +196,26 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 	}
 	if f.t.isPtr != nil {
 		f.t = f.t.isPtr
-		return genFieldSchema(f)
-		// TODO set nullable for field
+		val, err := genFieldSchema(f)
+		if err != nil {
+			return nil, err
+		}
+		if f.t.isScalar {
+			val.Ref = ""
+			val.Value.Nullable = true
+			return val, nil
+		}
+
+		nulltype := openapi3.NewSchema()
+		nulltype.Type = "null"
+
+		ret := openapi3.NewSchema()
+		ret.AnyOf = append(ret.AnyOf, openapi3.NewSchemaRef("", nulltype), val)
+		return openapi3.NewSchemaRef("", ret), nil
 	}
 	if f.t.isSpecial != 0 {
 		return genRefFieldSpecial(f.t)
 	}
-	q.Q(f.t)
 	panic(fmt.Sprint(f.t))
 }
 
@@ -140,7 +223,6 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	if t == nil {
 		return nil, nil
 	}
-	q.Q(t.name)
 
 	if t.isStruct == nil {
 		panic(fmt.Sprint(*t))
@@ -156,7 +238,11 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	sc.Description = t.doc
 
 	for _, e := range t.isStruct.embeds {
-		ref, err := genRefFieldStruct(e)
+		if e.t.id == "github.com/ggicci/httpin.JSONBody" {
+			continue
+		}
+
+		ref, err := genFieldSchema(e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "processing embedded field '%v'", e.name)
 		}
@@ -176,6 +262,36 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	return ret, nil
 }
 
+type inProps struct {
+	name     string
+	location string
+	required bool
+}
+
+func genInProps(tags string) *inProps {
+	tags = strings.Trim(tags, "`")
+	tag := reflect.StructTag(tags)
+	tagval := tag.Get("in")
+	if len(tagval) == 0 || tagval == "-" {
+		return nil
+	}
+
+	spl := strings.Split(tagval, ";")
+
+	ret := &inProps{}
+	for _, s := range spl {
+		if s == "required" {
+			ret.required = true
+			continue
+		}
+		src2name := strings.SplitN(s, "=", 2)
+		ret.location = src2name[0]
+		ret.name = strings.Split(src2name[1], ",")[0]
+		break
+	}
+	return ret
+}
+
 func genFieldName(name, tags string) string {
 	tags = strings.Trim(tags, "`")
 	tag := reflect.StructTag(tags)
@@ -186,7 +302,7 @@ func genFieldName(name, tags string) string {
 	return name
 }
 
-func genRefFieldScalar(t typeDesc) (*openapi3.SchemaRef, error) {
+func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	if !t.isScalar {
 		panic(t)
 	}

@@ -17,7 +17,7 @@ type Handler struct {
 type iterateRequest struct {
 	iterateEmbedded
 	// Local field
-	Local string `json:"local"`
+	Local string `in:"body=json"`
 
 	SliceStrings []string `foo:"bar"`
 
@@ -29,7 +29,7 @@ type mapped struct{}
 // Embed comment
 type iterateEmbedded struct {
 	// PageToken comment
-	PageToken string `json:"page_token"`
+	PageToken string `in:"query=page_token"`
 }
 
 var _ sdesc.Service = &Handler{}
