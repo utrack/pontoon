@@ -51,16 +51,12 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 	comp := openapi3.NewComponents()
 	comp.Schemas = openapi3.Schemas{}
-	for _, t := range typeCache {
-		if t.isStruct == nil {
-			continue
-		}
-		sr, ok := cacheSchemaRefs[t]
-		if !ok {
+	for d, t := range cacheSchemaRefs {
+		if t.Value == nil || t.Value.Type != "object" {
 			continue
 		}
 
-		comp.Schemas[t.name] = openapi3.NewSchemaRef("", sr.Value)
+		comp.Schemas[d.name] = openapi3.NewSchemaRef("", t.Value)
 	}
 
 	root := openapi3.T{}
@@ -75,7 +71,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 	err := root.Validate(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate the spec")
+		q.Q(err)
 	}
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
@@ -88,7 +84,6 @@ var cacheSchemaRefs = map[*typeDesc]*openapi3.SchemaRef{}
 
 func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 	for _, f := range t.isStruct.embeds {
-		q.Q(f.t.id)
 		if f.t.id == "github.com/ggicci/httpin.JSONBody" {
 			rs, err := genRefFieldStruct(t)
 			if err != nil {
@@ -210,7 +205,9 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 		nulltype.Type = "null"
 
 		ret := openapi3.NewSchema()
-		ret.AnyOf = append(ret.AnyOf, openapi3.NewSchemaRef("", nulltype), val)
+		ret.AnyOf = append(ret.AnyOf,
+			openapi3.NewSchemaRef("", nulltype),
+			val)
 		return openapi3.NewSchemaRef("", ret), nil
 	}
 	if f.t.isSpecial != 0 {
@@ -295,6 +292,7 @@ func genInProps(tags string) *inProps {
 func genFieldName(name, tags string) string {
 	tags = strings.Trim(tags, "`")
 	tag := reflect.StructTag(tags)
+	q.Q(name, tags)
 	ret := tag.Get("json")
 	if ret != "" {
 		return ret

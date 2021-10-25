@@ -101,7 +101,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 
 		fd := descField{
 			doc:  docs.DocsByFields[f.Name()],
-			tags: docs.TagsByFields[f.Name()],
+			tags: st.Tag(i),
 		}
 		ft, err := b.getTypeDescCached(f.Type())
 		if err != nil {
@@ -133,7 +133,6 @@ func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
 
 	desc := structDoc{
 		DocsByFields: map[string]string{},
-		TagsByFields: map[string]string{},
 	}
 
 	if anode.Doc != nil {
@@ -151,9 +150,6 @@ func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
 		if len(f.Names) == 0 {
 			continue // embedded struct
 		}
-		if f.Tag != nil {
-			desc.TagsByFields[f.Names[0].Name] = f.Tag.Value
-		}
 		if f.Doc != nil {
 			desc.DocsByFields[f.Names[0].Name] = f.Doc.Text()
 		}
@@ -165,5 +161,4 @@ func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
 type structDoc struct {
 	Doc          string
 	DocsByFields map[string]string
-	TagsByFields map[string]string
 }

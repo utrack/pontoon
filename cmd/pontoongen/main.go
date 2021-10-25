@@ -2,23 +2,35 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"go/types"
 	"log"
+	"os"
 
 	"golang.org/x/tools/go/packages"
 )
 
-const descPkgName = "github.com/utrack/pontoon/sdesc"
+//const descPkgName = "github.com/utrack/pontoon/sdesc"
+
+const descPkgName = "gitlab.com/HnBI/shared-projects/go/platform/bootstrap/desc"
 
 func main() {
 	dir := flag.String("dir", ".", "directory to parse files from")
 	help := flag.Bool("help", false, "print help string and exit")
+	outPath := flag.String("out", "", "output file")
 	flag.Parse()
 	if *help {
 		flag.Usage()
 		return
 	}
+	if *outPath == "" {
+		*outPath = *dir + "/pontoon.gen.go"
+	}
+
+	fout, err := os.Create(*outPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fout.Close()
 
 	pcfg := packages.Config{
 		Mode: packages.NeedTypesInfo |
@@ -91,7 +103,21 @@ func main() {
 	if err != nil {
 		log.Fatal("when generating OpenAPI 3: ", err)
 	}
-	fmt.Println(string(buf))
+
+	res, err := tplGen(tplRequest{
+		Content: string(buf),
+		PkgPath: pkg.PkgPath,
+		PkgName: pkg.Name,
+	})
+	if err != nil {
+		log.Fatal("when executing go code template: ", err)
+	}
+
+	_, err = fout.Write(res)
+	if err != nil {
+		log.Fatal("when writing a file: ", err)
+	}
+
 }
 
 func getDescType(pkg *packages.Package) (*types.Interface, *types.Interface, error) {
