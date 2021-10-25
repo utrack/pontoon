@@ -9,9 +9,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-//const descPkgName = "github.com/utrack/pontoon/sdesc"
-
-const descPkgName = "gitlab.com/HnBI/shared-projects/go/platform/bootstrap/desc"
+const descPkgName = "github.com/utrack/pontoon/sdesc"
 
 func main() {
 	dir := flag.String("dir", ".", "directory to parse files from")
