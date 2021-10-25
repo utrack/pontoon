@@ -17,7 +17,3 @@ type RPCHandler interface{}
 type HTTPRouter interface {
 	MethodFunc(method, pattern string, hdl RPCHandler)
 }
-
-type ServiceOption func(*HandlerConfig)
-
-type HandlerConfig struct{}
