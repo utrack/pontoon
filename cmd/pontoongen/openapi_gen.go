@@ -75,6 +75,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
+	cacheSchemaRefs = map[*typeDesc]*openapi3.SchemaRef{}
 	return ret, nil
 }
 
