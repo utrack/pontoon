@@ -117,7 +117,7 @@ func main() {
 			res, err := tplGen(tplRequest{
 				Content:           string(buf),
 				PkgPath:           pkg.PkgPath,
-				PkgName:           svc.pkg,
+				PkgName:           pkg.Name,
 				HandlerStructName: svc.serviceStructName,
 			})
 			if err != nil {
