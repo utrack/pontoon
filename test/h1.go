@@ -17,11 +17,13 @@ type Handler struct {
 type iterateRequest struct {
 	iterateEmbedded
 	// Local field
-	Local string `in:"body=json"`
+	Local string `in:"query=local"`
 
 	SliceStrings []string `foo:"bar"`
 
 	Maps map[string]mapped `faa:"faw"`
+
+	Recursive *iterateRequest `in:"body=json"`
 }
 
 type mapped struct{}

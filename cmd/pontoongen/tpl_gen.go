@@ -6,9 +6,10 @@ import (
 )
 
 type tplRequest struct {
-	PkgPath string
-	PkgName string
-	Content string
+	PkgPath           string
+	PkgName           string
+	Content           string
+	HandlerStructName string
 }
 
 var tpl = template.Must(
@@ -19,7 +20,9 @@ var tpl = template.Must(
 
 package {{ .PkgName }}
 
-const OpenAPI = ` + "`{{ .Content }}`",
+func (s {{ .HandlerStructName }}) OpenAPI() string {
+return ` + "`{{ .Content }}`" + `
+}`,
 	))
 
 func tplGen(req tplRequest) ([]byte, error) {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
-	"github.com/ryboe/q"
 )
 
 func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
@@ -71,7 +70,6 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 	err := root.Validate(context.Background())
 	if err != nil {
-		q.Q(err)
 	}
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
@@ -230,6 +228,9 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 	sc := openapi3.NewSchema()
 	sc.Properties = openapi3.Schemas{}
+	ref := "#/components/schemas/" + t.name
+	ret := openapi3.NewSchemaRef(ref, sc)
+	cacheSchemaRefs[t] = ret
 
 	sc.Type = "object"
 	sc.Description = t.doc
@@ -254,8 +255,6 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 		fname := genFieldName(f.name, f.tags)
 		sc.Properties[fname] = ref
 	}
-	ret := openapi3.NewSchemaRef("#/components/schemas/"+t.name, sc)
-	cacheSchemaRefs[t] = ret
 	return ret, nil
 }
 
@@ -292,7 +291,6 @@ func genInProps(tags string) *inProps {
 func genFieldName(name, tags string) string {
 	tags = strings.Trim(tags, "`")
 	tag := reflect.StructTag(tags)
-	q.Q(name, tags)
 	ret := tag.Get("json")
 	if ret != "" {
 		return ret

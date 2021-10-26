@@ -23,6 +23,8 @@ func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileS
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot retrieve handler names")
 	}
+	tokfile := b.pkg.Fset.File(hs.Obj().Pos())
+	tokfile.Name()
 
 	f, err := b.astFindFile(hs.Obj().Pos())
 	if err != nil {
@@ -49,8 +51,11 @@ func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileS
 		})
 	}
 	ret := serviceDesc{
-		name:     hs.Obj().Pkg().Name() + "." + hs.Obj().Name(),
-		handlers: hd,
+		name:              hs.Obj().Pkg().Name() + "." + hs.Obj().Name(),
+		handlers:          hd,
+		pkg:               hs.Obj().Pkg().Path(),
+		filename:          tokfile.Name(),
+		serviceStructName: hs.Obj().Name(),
 	}
 	if doc != nil {
 		ret.doc = doc.Text()

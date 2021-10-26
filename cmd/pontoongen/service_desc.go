@@ -4,6 +4,10 @@ type serviceDesc struct {
 	name string
 	doc  string
 
+	filename          string
+	pkg               string
+	serviceStructName string
+
 	handlers []hdlDesc
 }
 

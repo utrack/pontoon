@@ -14,8 +14,9 @@ func (b *builder) getTypeDescCached(tt types.Type) (*typeDesc, error) {
 	if r, ok := typeCache[tt]; ok {
 		return r, nil
 	}
+	typeCache[tt] = &typeDesc{}
 	ret, err := b.getTypeDesc(tt)
-	typeCache[tt] = ret
+	*typeCache[tt] = *ret
 	return ret, err
 }
 
