@@ -293,6 +293,7 @@ func genFieldName(name, tags string) string {
 	tags = strings.Trim(tags, "`")
 	tag := reflect.StructTag(tags)
 	ret := tag.Get("json")
+	ret = strings.TrimSuffix(ret, ",omitempty")
 	if ret != "" {
 		return ret
 	}
