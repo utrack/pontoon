@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -64,13 +63,11 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 		Version: "1-autogen",
 	}
 
-	root.OpenAPI = "3.0.1"
+	root.OpenAPI = "3.1.0"
 	root.Components = comp
 	root.Paths = paths
 
-	err := root.Validate(context.Background())
-	if err != nil {
-	}
+	//err := root.Validate(context.Background())
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
 		panic(err)
