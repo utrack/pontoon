@@ -5,6 +5,7 @@ import (
 	"go/types"
 
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTypesDesc, error) {
@@ -20,6 +21,8 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 	if sel == nil {
 		return nil, errors.Errorf("handler func '%v' not found", fnIdent.Name)
 	}
+
+	f, _ := b.astFindFile(sel.Obj().Pos())
 
 	sig := sel.Type().(*types.Signature)
 
@@ -84,6 +87,20 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 		ret.outType, err = b.getTypeDescCached(outType)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot get output type description")
+		}
+	}
+	if f != nil {
+		pathdesc, _ := astutil.PathEnclosingInterval(f, sel.Obj().Pos(), sel.Obj().Pos())
+		for _, n := range pathdesc {
+			fd, ok := n.(*ast.FuncDecl)
+			if !ok {
+				continue
+			}
+			if fd.Name == nil ||
+				fd.Name.Name != fnIdent.Name {
+				continue
+			}
+			ret.description = fd.Doc.Text()
 		}
 	}
 	return ret, nil

@@ -45,9 +45,10 @@ func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileS
 		}
 
 		hd = append(hd, hdlDesc{
-			op:    hp.op,
-			path:  hp.path,
-			inout: *fnDesc,
+			op:          hp.op,
+			path:        hp.path,
+			inout:       *fnDesc,
+			description: fnDesc.description,
 		})
 	}
 	ret := serviceDesc{

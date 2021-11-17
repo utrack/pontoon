@@ -14,7 +14,7 @@ type serviceDesc struct {
 type hdlDesc struct {
 	op          string
 	path        string
-	description string // TODO fill
+	description string
 	inout       hdlTypesDesc
 }
 
@@ -22,4 +22,5 @@ type hdlTypesDesc struct {
 	inType            *typeDesc
 	hasResponseWriter bool
 	outType           *typeDesc
+	description       string
 }
