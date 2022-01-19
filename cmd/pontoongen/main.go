@@ -69,6 +69,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if descIface == nil {
+		log.Println("project does not use pontoon - exiting")
+		return
+	}
 
 	for _, pkg := range pkgs {
 		bu := builder{pkg: pkg, muxType: descMux}
@@ -141,6 +145,9 @@ func main() {
 
 func getDescType(pkg *packages.Package) (*types.Interface, *types.Interface, error) {
 	decl := pkg.Types.Scope().Lookup("Service")
+	if decl == nil {
+		return nil, nil, nil
+	}
 	t := decl.Type().Underlying().(*types.Interface)
 
 	declMux := pkg.Types.Scope().Lookup("HTTPRouter")
