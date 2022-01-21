@@ -17,7 +17,11 @@ type builder struct {
 }
 
 func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileSet) (*serviceDesc, error) {
-	hdlRegFunc := ms.Lookup(b.pkg.Types, "RegisterHTTP").Obj().(*types.Func)
+	hdlRegFuncRef := ms.Lookup(b.pkg.Types, "RegisterHTTP")
+	if hdlRegFuncRef == nil {
+		return nil, errors.New("RegisterHTTP func was not located")
+	}
+	hdlRegFunc := hdlRegFuncRef.Obj().(*types.Func)
 
 	hpp, err := b.getHandlerNames(hdlRegFunc)
 	if err != nil {

@@ -97,10 +97,10 @@ func main() {
 				continue
 			}
 
-			ms := types.NewMethodSet(namedT)
+			ms := types.NewMethodSet(ptr)
 			svc, err := bu.Service(ms, namedT, pkg.Fset)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("when generating " + namedT.String() + ":" + err.Error())
 			}
 			svcs = append(svcs, *svc)
 		}
