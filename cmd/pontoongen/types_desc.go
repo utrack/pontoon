@@ -22,6 +22,7 @@ type typeDesc struct {
 	isSlice   *descSlice
 	isMap     *descMap
 	isPtr     *typeDesc
+	isAny     bool
 }
 
 type descSlice struct {

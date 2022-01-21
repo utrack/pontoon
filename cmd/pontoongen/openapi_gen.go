@@ -209,6 +209,9 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 	if f.t.isSpecial != 0 {
 		return genRefFieldSpecial(f.t)
 	}
+	if f.t.isAny {
+		return genRefFieldAny(f.t)
+	}
 	panic(fmt.Sprint(f.t))
 }
 
@@ -295,6 +298,16 @@ func genFieldName(name, tags string) string {
 		return ret
 	}
 	return name
+}
+
+func genRefFieldAny(t *typeDesc) (*openapi3.SchemaRef, error) {
+	if !t.isAny {
+		panic(t)
+	}
+
+	sc := openapi3.NewSchema()
+
+	return openapi3.NewSchemaRef("", sc), nil
 }
 
 func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {

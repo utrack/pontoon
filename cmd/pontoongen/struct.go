@@ -16,6 +16,9 @@ func (b *builder) getTypeDescCached(tt types.Type) (*typeDesc, error) {
 	}
 	typeCache[tt] = &typeDesc{}
 	ret, err := b.getTypeDesc(tt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "when looking for known type '%v'", tt.String())
+	}
 	*typeCache[tt] = *ret
 	return ret, err
 }
@@ -70,9 +73,29 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		case *types.Basic:
 			return b.getTypeDescCached(tu)
 		case *types.Struct:
+		case *types.Map:
+			return b.getTypeDescCached(tu)
+		case *types.Slice:
+			if t.String() == "encoding/json.RawMessage" {
+				return &typeDesc{
+					id:    "any",
+					name:  "any",
+					isAny: true,
+				}, nil
+			}
+			return b.getTypeDescCached(tu)
 		default:
 			return nil, errors.Errorf("unknown underlying type '%v' of Named '%v' (value '%v')", reflect.TypeOf(tu).String(), reflect.TypeOf(tt).String(), tt.String())
 		}
+	case *types.Interface:
+		if t.String() != "interface{}" {
+			return nil, errors.Errorf("don't know how to present interface '%v' in OpenAPI", t.String())
+		}
+		return &typeDesc{
+			id:    "any",
+			name:  "any",
+			isAny: true,
+		}, nil
 	default:
 		return nil, errors.Errorf("unknown Type of '%v' (value '%v')", reflect.TypeOf(tt).String(), tt.String())
 	}
