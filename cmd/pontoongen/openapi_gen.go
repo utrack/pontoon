@@ -319,10 +319,10 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 	switch t.name {
 	case "int32":
-		sc.Type = "number"
+		sc.Type = "integer"
 		sc.Format = "int32"
 	case "int", "int64":
-		sc.Type = "number"
+		sc.Type = "integer"
 		sc.Format = "int64"
 	case "float32":
 		sc.Type = "number"
@@ -333,15 +333,15 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	case "string":
 		sc.Type = "string"
 	case "uint", "uint64":
-		sc.Type = "number"
+		sc.Type = "integer"
 		sc.Format = "int64"
 		sc = sc.WithMin(0)
 	case "uint32":
-		sc.Type = "number"
+		sc.Type = "integer"
 		sc.Format = "int32"
 		sc = sc.WithMin(0)
 	case "uint8":
-		sc.Type = "number"
+		sc.Type = "integer"
 		sc = sc.WithMin(0).WithMax(math.MaxUint8)
 	case "bool":
 		sc.Type = "boolean"
