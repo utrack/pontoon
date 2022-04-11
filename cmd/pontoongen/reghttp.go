@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go/ast"
 	"go/types"
 	"strings"
@@ -63,8 +64,8 @@ func (vr *visRegHTTP) Visit(node ast.Node) ast.Visitor {
 	argOp,
 		argPath,
 		argHandlerFunc :=
-		cv.Args[0].(*ast.BasicLit),
-		cv.Args[1].(*ast.BasicLit),
+		litFromExpr(cv.Args[0]),
+		litFromExpr(cv.Args[1]),
 		cv.Args[2].(*ast.SelectorExpr)
 
 	vr.hits = append(vr.hits, hdlPathPtr{
@@ -73,4 +74,15 @@ func (vr *visRegHTTP) Visit(node ast.Node) ast.Visitor {
 		fn:   argHandlerFunc})
 
 	return nil
+}
+
+func litFromExpr(ex ast.Expr) *ast.BasicLit {
+	if v, ok := ex.(*ast.BasicLit); ok {
+		return v
+	}
+	if v, ok := ex.(*ast.Ident); ok {
+		vv := v.Obj.Decl.(*ast.ValueSpec).Values[0]
+		return litFromExpr(vv)
+	}
+	panic(fmt.Sprintf("litFromExpr: cannot convert %v to BasicLit", ex))
 }
