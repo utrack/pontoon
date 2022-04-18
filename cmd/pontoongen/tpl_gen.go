@@ -21,7 +21,8 @@ package {{ .PkgName }}
 
 func (s {{ .HandlerStructName }}) OpenAPI() string {
 	return ` + "`{{ .Content }}`" + `
-}`,
+}
+`,
 	))
 
 func tplGen(req tplRequest) ([]byte, error) {
