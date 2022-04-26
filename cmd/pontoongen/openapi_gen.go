@@ -254,6 +254,9 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 			return nil, errors.Wrapf(err, "processing embedded field '%v'", f.name)
 		}
 		fname := genFieldName(f.name, f.tags)
+		if fname == "-" {
+			continue
+		}
 		sc.Properties[fname] = ref
 	}
 	return ret, nil
