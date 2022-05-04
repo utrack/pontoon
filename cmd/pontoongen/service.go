@@ -16,6 +16,10 @@ type builder struct {
 	muxType *types.Interface
 }
 
+func (b builder) astFindFile(pos token.Pos) (*ast.File, error) {
+	return astFindFile(b.pkg, pos)
+}
+
 func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileSet) (*serviceDesc, error) {
 	hdlRegFuncRef := ms.Lookup(b.pkg.Types, "RegisterHTTP")
 	if hdlRegFuncRef == nil {

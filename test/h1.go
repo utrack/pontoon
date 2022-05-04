@@ -37,6 +37,7 @@ type iterateEmbedded struct {
 var _ sdesc.Service = &Handler{}
 
 // IterateProducts comment
+// Includes imported package
 func (h Handler) iterateProducts(r *http.Request, req iterateRequest) (*test2.IterateResponse, error) {
 	return nil, errors.New("NIH")
 }

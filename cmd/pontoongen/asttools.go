@@ -5,18 +5,19 @@ import (
 	"go/token"
 
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/packages"
 )
 
-func (b builder) astFindFile(pos token.Pos) (*ast.File, error) {
+func astFindFile(pkg *packages.Package, pos token.Pos) (*ast.File, error) {
 
-	afiles := b.pkg.Syntax
+	afiles := pkg.Syntax
 
-	selFile := b.pkg.Fset.File(pos)
+	selFile := pkg.Fset.File(pos)
 
 	var af *ast.File
 
 	for _, sf := range afiles {
-		asf := b.pkg.Fset.File(sf.Pos())
+		asf := pkg.Fset.File(sf.Pos())
 		if asf == selFile {
 			af = sf
 			break

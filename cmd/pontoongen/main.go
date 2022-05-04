@@ -25,13 +25,11 @@ func main() {
 	}
 
 	pcfg := packages.Config{
-		Mode: packages.NeedTypesInfo |
-			packages.NeedSyntax |
+		Mode: packages.NeedImports |
 			packages.NeedName |
 			packages.NeedDeps |
 			packages.NeedTypes |
-			packages.NeedModule |
-			packages.NeedExportsFile,
+			packages.NeedSyntax,
 		Dir: *dir,
 	}
 	parsePath := "."
@@ -40,7 +38,7 @@ func main() {
 	}
 	srcPkgs, err := packages.Load(&pcfg, parsePath, descPkgName)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("packages.Load error:", err)
 	}
 
 	if len(srcPkgs) < 2 {
