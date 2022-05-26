@@ -132,6 +132,118 @@ func (s Handler) OpenAPI() string {
             "test.Handler"
           ]
         }
+      },
+      "/v1/test/return/interface": {
+        "get": {
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/return/interface-any": {
+        "get": {
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
       }
     }
   }`

@@ -34,7 +34,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 				}
 			}
 
-			out, err := genRefFieldStruct(h.inout.outType)
+			out, err := genRefOut(h.inout.outType)
 			if err != nil {
 				return nil, errors.Wrap(err, "generating output schema")
 			}
@@ -213,6 +213,13 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 		return genRefFieldAny(f.t)
 	}
 	panic(fmt.Sprint(f.t))
+}
+
+func genRefOut(t *typeDesc) (*openapi3.SchemaRef, error) {
+	if t.isAny {
+		return genRefFieldAny(t)
+	}
+	return genRefFieldStruct(t)
 }
 
 func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {

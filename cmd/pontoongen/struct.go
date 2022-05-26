@@ -88,7 +88,9 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Errorf("unknown underlying type '%v' of Named '%v' (value '%v')", reflect.TypeOf(tu).String(), reflect.TypeOf(tt).String(), tt.String())
 		}
 	case *types.Interface:
-		if t.String() != "interface{}" {
+		switch t.String() {
+		case "interface{}", "any":
+		default:
 			return nil, errors.Errorf("don't know how to present interface '%v' in OpenAPI", t.String())
 		}
 		return &typeDesc{

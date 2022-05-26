@@ -26,8 +26,8 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 
 	sig := sel.Type().(*types.Signature)
 
-	var inType *types.Named
-	var outType *types.Named
+	var inType *typeDesc
+	var outType *typeDesc
 
 	var hasResponseWriter bool
 	for i := 0; i < sig.Params().Len(); i++ {
@@ -46,9 +46,12 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 		}
 
 		var err error
-		inType, err = getStructNamedType(namedType)
+		inType, err = b.rootStructDesc(namedType)
 		if err != nil {
-			return nil, errors.Wrapf(err, "converting input type '%v' to struct", namedType.String())
+			return nil, errors.Wrapf(err, "converting input type '%v' to type description", namedType.String())
+		}
+		if inType.isAny {
+			return nil, errors.Errorf("input type '%v' cannot be an interface", namedType.String())
 		}
 	}
 
@@ -66,28 +69,17 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 			}
 
 			var err error
-			outType, err = getStructNamedType(t)
+			outType, err = b.rootStructDesc(t)
 			if err != nil {
-				return nil, errors.Wrapf(err, "converting result type '%v' to struct", t)
+				return nil, errors.Wrapf(err, "converting result type '%v' to type description", t)
 			}
 		}
 	}
 
 	ret := &hdlTypesDesc{
 		hasResponseWriter: hasResponseWriter,
-	}
-	var err error
-	if inType != nil {
-		ret.inType, err = b.getTypeDescCached(inType)
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot get input type description")
-		}
-	}
-	if outType != nil {
-		ret.outType, err = b.getTypeDescCached(outType)
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot get output type description")
-		}
+		inType:            inType,
+		outType:           outType,
 	}
 	if f != nil {
 		pathdesc, _ := astutil.PathEnclosingInterval(f, sel.Obj().Pos(), sel.Obj().Pos())
@@ -106,10 +98,9 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 	return ret, nil
 }
 
-func getStructNamedType(t types.Type) (*types.Named, error) {
+func (b *builder) rootStructDesc(t types.Type) (*typeDesc, error) {
 	if p, ok := t.(*types.Pointer); ok {
 		t = p.Elem()
 	}
-
-	return t.(*types.Named), nil
+	return b.getTypeDescCached(t)
 }

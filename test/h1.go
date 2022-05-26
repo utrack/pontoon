@@ -42,6 +42,14 @@ func (h Handler) iterateProducts(r *http.Request, req iterateRequest) (*test2.It
 	return nil, errors.New("NIH")
 }
 
+func (h Handler) ifaceReturn(r *http.Request, req iterateRequest) (interface{}, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) ifaceReturnAny(r *http.Request, req iterateRequest) (any, error) {
+	return nil, errors.New("NIH")
+}
+
 func (h Handler) ServiceOptions() []sdesc.ServiceOption {
 	return nil
 }
