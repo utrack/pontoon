@@ -216,6 +216,10 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 }
 
 func genRefOut(t *typeDesc) (*openapi3.SchemaRef, error) {
+	if t == nil {
+		return nil, nil
+	}
+
 	if t.isAny {
 		return genRefFieldAny(t)
 	}

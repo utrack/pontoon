@@ -50,6 +50,10 @@ func (h Handler) ifaceReturnAny(r *http.Request, req iterateRequest) (any, error
 	return nil, errors.New("NIH")
 }
 
+func (h Handler) zeroReturn(r *http.Request, req iterateRequest) error {
+	return errors.New("NIH")
+}
+
 func (h Handler) ServiceOptions() []sdesc.ServiceOption {
 	return nil
 }
