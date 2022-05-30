@@ -159,31 +159,10 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 		return openapi3.NewSchemaRef(ref.Ref, nil), nil
 	}
 	if f.t.isMap != nil {
-		if !f.t.isMap.key.isScalar {
-			return nil, errors.New("non-scalar keys in maps are not allowed")
-		}
-		val, err := genFieldSchema(descField{t: f.t.isMap.value})
-		if err != nil {
-			return nil, err
-		}
-
-		ret := openapi3.NewSchema()
-		ret.Type = "object"
-		ret.AdditionalProperties = val
-		return openapi3.NewSchemaRef("", ret), nil
+		return genRefFieldMap(f.t)
 	}
 	if f.t.isSlice != nil {
-		val, err := genFieldSchema(descField{t: f.t.isSlice.t})
-		if err != nil {
-			return nil, errors.Wrap(err, "creating slice value ref")
-		}
-
-		ret := openapi3.NewSchema()
-		ret.Type = "array"
-		ret.Items = val
-		ret.Nullable = true
-		return openapi3.NewSchemaRef("", ret), nil
-
+		return genRefFieldSlice(f.t)
 	}
 	if f.t.isPtr != nil {
 		f.t = f.t.isPtr
@@ -222,6 +201,12 @@ func genRefOut(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 	if t.isAny {
 		return genRefFieldAny(t)
+	}
+	if t.isSlice != nil {
+		return genRefFieldSlice(t)
+	}
+	if t.isMap != nil {
+		return genRefFieldMap(t)
 	}
 	return genRefFieldStruct(t)
 }
@@ -364,6 +349,51 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	}
 	return openapi3.NewSchemaRef("", sc), nil
 }
+
+func genRefFieldSlice(t *typeDesc) (*openapi3.SchemaRef, error) {
+	if t == nil {
+		return nil, nil
+	}
+
+	if t.isSlice == nil {
+		panic(fmt.Sprint(*t))
+	}
+
+	val, err := genFieldSchema(descField{t: t.isSlice.t})
+	if err != nil {
+		return nil, errors.Wrap(err, "creating slice value ref")
+	}
+
+	ret := openapi3.NewSchema()
+	ret.Type = "array"
+	ret.Items = val
+	ret.Nullable = true
+	return openapi3.NewSchemaRef("", ret), nil
+}
+
+func genRefFieldMap(t *typeDesc) (*openapi3.SchemaRef, error) {
+	if t == nil {
+		return nil, nil
+	}
+
+	if t.isMap == nil {
+		panic(fmt.Sprint(*t))
+	}
+
+	if !t.isMap.key.isScalar {
+		return nil, errors.New("non-scalar keys in maps are not allowed")
+	}
+	val, err := genFieldSchema(descField{t: t.isMap.value})
+	if err != nil {
+		return nil, err
+	}
+
+	ret := openapi3.NewSchema()
+	ret.Type = "object"
+	ret.AdditionalProperties = val
+	return openapi3.NewSchemaRef("", ret), nil
+}
+
 func genRefFieldSpecial(t *typeDesc) (*openapi3.SchemaRef, error) {
 	switch t.isSpecial {
 	case specialTypeTime:

@@ -11,4 +11,6 @@ func (h Handler) RegisterHTTP(mux sdesc.HTTPRouter) {
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/return-nothing", h.zeroReturn)
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/interface", h.ifaceReturn)
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/interface-any", h.ifaceReturnAny)
+	mux.MethodFunc(http.MethodGet, "/v1/test/return/slice", h.sliceReturn)
+	mux.MethodFunc(http.MethodGet, "/v1/test/return/map", h.mapReturn)
 }

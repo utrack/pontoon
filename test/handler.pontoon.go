@@ -245,6 +245,67 @@ func (s Handler) OpenAPI() string {
           ]
         }
       },
+      "/v1/test/return/map": {
+        "get": {
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/test2.IterateResponse"
+                    },
+                    "type": "object"
+                  }
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
       "/v1/test/return/return-nothing": {
         "get": {
           "parameters": [
@@ -287,6 +348,68 @@ func (s Handler) OpenAPI() string {
             "200": {
               "content": {
                 "application/json": {}
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/return/slice": {
+        "get": {
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "items": {
+                      "$ref": "#/components/schemas/test2.IterateResponse"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  }
+                }
               },
               "description": "success"
             },
