@@ -131,6 +131,122 @@ func (s Handler) OpenAPI() string {
           "tags": [
             "test.Handler"
           ]
+        },
+        "post": {
+          "description": "IterateProducts comment\nIncludes imported package\n",
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/test2.IterateResponse"
+                  }
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/products/iterate/create": {
+        "post": {
+          "description": "IterateProducts comment\nIncludes imported package\n",
+          "parameters": [
+            {
+              "description": "PageToken comment\n",
+              "in": "query",
+              "name": "page_token",
+              "schema": {
+                "description": "PageToken comment\n",
+                "type": "string"
+              }
+            },
+            {
+              "description": "Local field\n",
+              "in": "query",
+              "name": "local",
+              "schema": {
+                "description": "Local field\n",
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/test.iterateRequest"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/test2.IterateResponse"
+                  }
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
         }
       },
       "/v1/test/return/interface": {

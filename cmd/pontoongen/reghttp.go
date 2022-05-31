@@ -100,6 +100,15 @@ func (vr *visRegHTTP) litFromExpr(ex ast.Node) *ast.BasicLit {
 		f, _ := astFindFile(vr.pkgReg.Imports[pkg.Path()], obj.Pos())
 
 		ecl, _ := astutil.PathEnclosingInterval(f, obj.Pos()-1, obj.Pos())
+
+		specs := ecl[0].(*ast.GenDecl).Specs
+		for i, s := range specs {
+			specName := s.(*ast.ValueSpec).Names[0].Name
+			if specName == v.Sel.Name {
+				return vr.litFromExpr(specs[i])
+			}
+		}
+
 		return vr.litFromExpr(ecl[0].(*ast.GenDecl).Specs[0])
 	case *ast.ValueSpec:
 		return vr.litFromExpr(v.Names[0])
