@@ -70,7 +70,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 	//err := root.Validate(context.Background())
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("error marshalling openapi spec: %s", err))
 	}
 	cacheSchemaRefs = map[*typeDesc]*openapi3.SchemaRef{}
 	return ret, nil
@@ -79,6 +79,11 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 var cacheSchemaRefs = map[*typeDesc]*openapi3.SchemaRef{}
 
 func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
+	// Dereference pointers in input parameters to get the actual type
+	if t.isStruct == nil && t.isPtr != nil {
+		t = t.isPtr
+	}
+
 	for _, f := range t.isStruct.embeds {
 		if f.t.id == "github.com/ggicci/httpin.JSONBody" {
 			rs, err := genRefFieldStruct(t)
@@ -191,7 +196,7 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 	if f.t.isAny {
 		return genRefFieldAny(f.t)
 	}
-	panic(fmt.Sprint(f.t))
+	panic(fmt.Sprintf("failed to generate field schema: %+v", f.t))
 }
 
 func genRefOut(t *typeDesc) (*openapi3.SchemaRef, error) {
@@ -208,6 +213,9 @@ func genRefOut(t *typeDesc) (*openapi3.SchemaRef, error) {
 	if t.isMap != nil {
 		return genRefFieldMap(t)
 	}
+	if t.isScalar {
+		return genRefFieldScalar(t)
+	}
 	return genRefFieldStruct(t)
 }
 
@@ -217,7 +225,7 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	}
 
 	if t.isStruct == nil {
-		panic(fmt.Sprint(*t))
+		panic(fmt.Sprintf("generating ref for struct field but t.isStruct is false - t: %+v", *t))
 	}
 	if ref, ok := cacheSchemaRefs[t]; ok {
 		return ref, nil
@@ -301,7 +309,7 @@ func genFieldName(name, tags string) string {
 
 func genRefFieldAny(t *typeDesc) (*openapi3.SchemaRef, error) {
 	if !t.isAny {
-		panic(t)
+		panic(fmt.Sprintf("generating ref for any, but t.isAny is false - t: %+v", t))
 	}
 
 	sc := openapi3.NewSchema()
@@ -311,7 +319,7 @@ func genRefFieldAny(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	if !t.isScalar {
-		panic(t)
+		panic(fmt.Sprintf("generating ref for scalar field, but t.isScalar is false - t: %+v", t))
 	}
 
 	sc := openapi3.NewSchema()
@@ -356,7 +364,15 @@ func genRefFieldSlice(t *typeDesc) (*openapi3.SchemaRef, error) {
 	}
 
 	if t.isSlice == nil {
-		panic(fmt.Sprint(*t))
+		panic(fmt.Sprintf("generating ref for slice, but t.isSlice is nil, t: %+v", *t))
+	}
+
+	// Represent []byte as string with byte format
+	if t.isSlice.t.name == "byte" {
+		sc := openapi3.NewSchema()
+		sc.Type = "string"
+		sc.Format = "byte"
+		return openapi3.NewSchemaRef("", sc), nil
 	}
 
 	val, err := genFieldSchema(descField{t: t.isSlice.t})
@@ -377,7 +393,7 @@ func genRefFieldMap(t *typeDesc) (*openapi3.SchemaRef, error) {
 	}
 
 	if t.isMap == nil {
-		panic(fmt.Sprint(*t))
+		panic(fmt.Sprintf("generating ref for map, but t.isMap is false - t: %+v", t))
 	}
 
 	if !t.isMap.key.isScalar {
@@ -402,6 +418,6 @@ func genRefFieldSpecial(t *typeDesc) (*openapi3.SchemaRef, error) {
 		sc.Format = "date-time"
 		return openapi3.NewSchemaRef("", sc), nil
 	default:
-		panic(t)
+		panic(fmt.Sprintf("unsupported special field - t: %+v", t))
 	}
 }
