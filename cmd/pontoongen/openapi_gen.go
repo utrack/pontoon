@@ -331,6 +331,9 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	case "int", "int64":
 		sc.Type = "integer"
 		sc.Format = "int64"
+	case "int16":
+		sc.Type = "integer"
+		sc.Format = "int16"
 	case "float32":
 		sc.Type = "number"
 		sc.Format = "float"
