@@ -25,7 +25,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			}
 
 			op := openapi3.NewOperation()
-			op.Description = h.description
+			op.Description = docFromComment(h.goFuncName, "", h.description)
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
@@ -115,7 +115,6 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			return err
 		}
 
-		fmt.Println(props)
 		doc := docFromComment(f.name, props.name, f.doc)
 		switch props.location {
 		case "body":
@@ -439,7 +438,10 @@ func docFromComment(goLongName string, jsonTag string, comment string) string {
 	// remove heading FieldName needed by Go specs
 	//
 	// FooField is a foo field -> is a foo field
-	comment = strings.TrimPrefix(comment, goName)
+	// fooFielD is a foo field -> is a foo field
+	if strings.HasPrefix(strings.ToLower(comment), strings.ToLower(goName)) {
+		comment = comment[len(goName):]
+	}
 
 	comment = strings.Trim(comment, "\n\r \t")
 

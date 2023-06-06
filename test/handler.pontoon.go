@@ -76,7 +76,7 @@ func (s Handler) OpenAPI() string {
     "paths": {
       "/v1/products/iterate": {
         "get": {
-          "description": "IterateProducts comment\nIncludes imported package\n",
+          "description": "Comment\nIncludes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
@@ -133,7 +133,7 @@ func (s Handler) OpenAPI() string {
           ]
         },
         "post": {
-          "description": "IterateProducts comment\nIncludes imported package\n",
+          "description": "Comment\nIncludes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
@@ -192,7 +192,7 @@ func (s Handler) OpenAPI() string {
       },
       "/v1/products/iterate/create": {
         "post": {
-          "description": "IterateProducts comment\nIncludes imported package\n",
+          "description": "Comment\nIncludes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",

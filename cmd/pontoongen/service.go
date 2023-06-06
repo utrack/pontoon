@@ -57,6 +57,7 @@ func (b builder) Service(ms *types.MethodSet, hs *types.Named, fset *token.FileS
 			path:        hp.path,
 			inout:       *fnDesc,
 			description: fnDesc.description,
+			goFuncName:  hp.fn.Sel.Name,
 		})
 	}
 	ret := serviceDesc{
