@@ -6,6 +6,7 @@ import (
 	"math"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
@@ -114,9 +115,11 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			return err
 		}
 
+		fmt.Println(props)
+		doc := docFromComment(f.name, props.name, f.doc)
 		switch props.location {
 		case "body":
-			body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(f.doc)
+			body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(doc)
 			sc.RequestBody = &openapi3.RequestBodyRef{
 				Value: body,
 			}
@@ -124,20 +127,20 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			q := openapi3.NewQueryParameter(props.name).
 				WithSchema(fs.Value).
 				WithRequired(props.required).
-				WithDescription(f.doc)
+				WithDescription(doc)
 
 			sc.AddParameter(q)
 		case "header":
 			q := openapi3.NewHeaderParameter(props.name).
 				WithSchema(fs.Value).
 				WithRequired(props.required).
-				WithDescription(f.doc)
+				WithDescription(doc)
 			sc.AddParameter(q)
 		case "path":
 			q := openapi3.NewPathParameter(props.name).
 				WithSchema(fs.Value).
 				WithRequired(props.required).
-				WithDescription(f.doc)
+				WithDescription(doc)
 			sc.AddParameter(q)
 		default:
 			return errors.Errorf("unknown in source type '%v' for field '%v'", props.location, f.name)
@@ -153,7 +156,7 @@ func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
 		if err != nil {
 			return nil, err
 		}
-		ret.Value.Description = f.doc
+		ret.Value.Description = docFromComment(f.name, "", f.doc)
 		return ret, nil
 	}
 	if f.t.isStruct != nil {
@@ -238,7 +241,7 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	cacheSchemaRefs[t] = ret
 
 	sc.Type = "object"
-	sc.Description = t.doc
+	sc.Description = docFromComment(t.name, "", t.doc)
 
 	for _, e := range t.isStruct.embeds {
 		if e.t.id == "github.com/ggicci/httpin.JSONBody" {
@@ -423,4 +426,35 @@ func genRefFieldSpecial(t *typeDesc) (*openapi3.SchemaRef, error) {
 	default:
 		panic(fmt.Sprintf("unsupported special field - t: %+v", t))
 	}
+}
+
+func docFromComment(goLongName string, jsonTag string, comment string) string {
+
+	goName := goLongName
+	// foo.Bar -> Bar
+	if idx := strings.LastIndex(goLongName, "."); idx > -1 {
+		goName = goName[idx+1:]
+	}
+
+	// remove heading FieldName needed by Go specs
+	//
+	// FooField is a foo field -> is a foo field
+	comment = strings.TrimPrefix(comment, goName)
+
+	comment = strings.Trim(comment, "\n\r \t")
+
+	comment = strings.TrimPrefix(comment, "is ")
+
+	// replace any other goName occurences with jsonTag if it's there
+	if jsonTag != "" {
+		comment = strings.ReplaceAll(comment, goName, jsonTag)
+	}
+
+	// capitalize first letter
+	if len(comment) > 0 {
+		r := []rune(comment)
+		r[0] = unicode.ToUpper(r[0])
+		comment = string(r)
+	}
+	return comment
 }

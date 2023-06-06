@@ -16,7 +16,7 @@ type Handler struct {
 // Request line 2
 type iterateRequest struct {
 	iterateEmbedded
-	// Local field
+	// Local describes Some Stuff(tm)
 	Local string `in:"query=local"`
 
 	SliceStrings []string `foo:"bar"`
@@ -28,9 +28,11 @@ type iterateRequest struct {
 
 type mapped struct{}
 
-// Embed comment
+// iterateEmbedded has an Embed comment
 type iterateEmbedded struct {
-	// PageToken comment
+	// PageToken is a token for the next page.
+	// Pass an empty PageToken if you want to request the first page,
+	// and use a token from the response as PageToken to get the next page.
 	PageToken string `in:"query=page_token"`
 }
 

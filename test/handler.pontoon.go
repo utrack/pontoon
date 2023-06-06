@@ -8,10 +8,10 @@ func (s Handler) OpenAPI() string {
     "components": {
       "schemas": {
         "test.iterateEmbedded": {
-          "description": "Embed comment\n",
+          "description": "Has an Embed comment",
           "properties": {
             "PageToken": {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
               "type": "string"
             }
           },
@@ -23,10 +23,10 @@ func (s Handler) OpenAPI() string {
               "$ref": "#/components/schemas/test.iterateEmbedded"
             }
           ],
-          "description": "Request comment\nRequest line 2\n",
+          "description": "Request comment\nRequest line 2",
           "properties": {
             "Local": {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "type": "string"
             },
             "Maps": {
@@ -79,20 +79,20 @@ func (s Handler) OpenAPI() string {
           "description": "IterateProducts comment\nIncludes imported package\n",
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -136,20 +136,20 @@ func (s Handler) OpenAPI() string {
           "description": "IterateProducts comment\nIncludes imported package\n",
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -195,20 +195,20 @@ func (s Handler) OpenAPI() string {
           "description": "IterateProducts comment\nIncludes imported package\n",
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -253,20 +253,20 @@ func (s Handler) OpenAPI() string {
         "get": {
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -309,20 +309,20 @@ func (s Handler) OpenAPI() string {
         "get": {
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -365,20 +365,20 @@ func (s Handler) OpenAPI() string {
         "get": {
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -426,20 +426,20 @@ func (s Handler) OpenAPI() string {
         "get": {
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
@@ -480,20 +480,20 @@ func (s Handler) OpenAPI() string {
         "get": {
           "parameters": [
             {
-              "description": "PageToken comment\n",
+              "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
               "in": "query",
               "name": "page_token",
               "schema": {
-                "description": "PageToken comment\n",
+                "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
               }
             },
             {
-              "description": "Local field\n",
+              "description": "Describes Some Stuff(tm)",
               "in": "query",
               "name": "local",
               "schema": {
-                "description": "Local field\n",
+                "description": "Describes Some Stuff(tm)",
                 "type": "string"
               }
             }
