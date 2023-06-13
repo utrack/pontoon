@@ -23,7 +23,6 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			Name:        s.name,
 			Description: docFromComment(s.name, "", s.doc),
 		})
-		fmt.Println(s.doc)
 
 		for _, h := range s.handlers {
 			p := paths[h.path]
