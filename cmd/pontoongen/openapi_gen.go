@@ -32,7 +32,10 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			}
 
 			op := openapi3.NewOperation()
-			op.Summary, op.Description = handlerSummaryAndDescription(h.goFuncName, "", h.description)
+			err := annotateHandler(h, op)
+			if err != nil {
+				return nil, errors.Wrap(err, "annotating handler")
+			}
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
@@ -469,13 +472,19 @@ func docFromComment(goLongName string, jsonTag string, comment string) string {
 	return comment
 }
 
-func handlerSummaryAndDescription(goLongName string, jsonTag string, comment string) (string, string) {
-	desc := docFromComment(goLongName, jsonTag, comment)
+func annotateHandler(h hdlDesc, op *openapi3.Operation) error {
+	desc := docFromComment(h.goFuncName, "", h.description)
 	var summary string
 	if idx := strings.Index(desc, "\n"); idx != -1 {
 		summary = desc[:idx]
 		desc = strings.TrimPrefix(desc, summary)
 		desc = strings.TrimSpace(desc)
 	}
-	return summary, desc
+	op.Summary = summary
+	op.Description = desc
+
+	if strings.Contains(desc, "\nDeprecated:") {
+		op.Deprecated = true
+	}
+	return nil
 }
