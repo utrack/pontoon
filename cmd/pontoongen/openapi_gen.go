@@ -16,7 +16,15 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 	paths := openapi3.Paths{}
 
+	tags := []*openapi3.Tag{}
+
 	for _, s := range ss {
+		tags = append(tags, &openapi3.Tag{
+			Name:        s.name,
+			Description: docFromComment(s.name, "", s.doc),
+		})
+		fmt.Println(s.doc)
+
 		for _, h := range s.handlers {
 			p := paths[h.path]
 			if p == nil {
@@ -25,7 +33,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			}
 
 			op := openapi3.NewOperation()
-			op.Description = docFromComment(h.goFuncName, "", h.description)
+			op.Summary, op.Description = handlerSummaryAndDescription(h.goFuncName, "", h.description)
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
@@ -67,6 +75,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 	root.OpenAPI = "3.1.0"
 	root.Components = comp
 	root.Paths = paths
+	root.Tags = tags
 
 	//err := root.Validate(context.Background())
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
@@ -459,4 +468,15 @@ func docFromComment(goLongName string, jsonTag string, comment string) string {
 		comment = string(r)
 	}
 	return comment
+}
+
+func handlerSummaryAndDescription(goLongName string, jsonTag string, comment string) (string, string) {
+	desc := docFromComment(goLongName, jsonTag, comment)
+	var summary string
+	if idx := strings.Index(desc, "\n"); idx != -1 {
+		summary = desc[:idx]
+		desc = strings.TrimPrefix(desc, summary)
+		desc = strings.TrimSpace(desc)
+	}
+	return summary, desc
 }
