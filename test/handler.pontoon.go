@@ -26,7 +26,7 @@ func (s Handler) OpenAPI() string {
           "description": "Request comment\nRequest line 2",
           "properties": {
             "Local": {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "type": "string"
             },
             "Maps": {
@@ -76,7 +76,7 @@ func (s Handler) OpenAPI() string {
     "paths": {
       "/v1/products/iterate": {
         "get": {
-          "description": "Comment\nIncludes imported package",
+          "description": "Includes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
@@ -88,11 +88,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -128,12 +129,13 @@ func (s Handler) OpenAPI() string {
               "description": ""
             }
           },
+          "summary": "Comment",
           "tags": [
             "test.Handler"
           ]
         },
         "post": {
-          "description": "Comment\nIncludes imported package",
+          "description": "Includes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
@@ -145,11 +147,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -185,6 +188,7 @@ func (s Handler) OpenAPI() string {
               "description": ""
             }
           },
+          "summary": "Comment",
           "tags": [
             "test.Handler"
           ]
@@ -192,7 +196,7 @@ func (s Handler) OpenAPI() string {
       },
       "/v1/products/iterate/create": {
         "post": {
-          "description": "Comment\nIncludes imported package",
+          "description": "Includes imported package",
           "parameters": [
             {
               "description": "A token for the next page.\nPass an empty page_token if you want to request the first page,\nand use a token from the response as page_token to get the next page.",
@@ -204,11 +208,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -244,6 +249,7 @@ func (s Handler) OpenAPI() string {
               "description": ""
             }
           },
+          "summary": "Comment",
           "tags": [
             "test.Handler"
           ]
@@ -262,11 +268,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -318,11 +325,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -374,11 +382,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -435,11 +444,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -489,11 +499,12 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
-              "description": "Describes Some Stuff(tm)",
+              "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
+              "required": true,
               "schema": {
-                "description": "Describes Some Stuff(tm)",
+                "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
             }
@@ -538,6 +549,12 @@ func (s Handler) OpenAPI() string {
           ]
         }
       }
-    }
+    },
+    "tags": [
+      {
+        "description": "Struct comment",
+        "name": "test.Handler"
+      }
+    ]
   }`
 }

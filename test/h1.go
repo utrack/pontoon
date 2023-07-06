@@ -16,8 +16,8 @@ type Handler struct {
 // Request line 2
 type iterateRequest struct {
 	iterateEmbedded
-	// Local describes Some Stuff(tm)
-	Local string `in:"query=local"`
+	// Local describes Some Stuff(tm). Required field.
+	Local string `in:"query=local;required"`
 
 	SliceStrings []string `foo:"bar"`
 

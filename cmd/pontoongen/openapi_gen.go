@@ -304,7 +304,6 @@ func genInProps(tags string) *inProps {
 		src2name := strings.SplitN(s, "=", 2)
 		ret.location = src2name[0]
 		ret.name = strings.Split(src2name[1], ",")[0]
-		break
 	}
 	return ret
 }
