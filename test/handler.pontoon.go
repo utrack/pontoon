@@ -29,6 +29,9 @@ func (s Handler) OpenAPI() string {
               "description": "Describes Some Stuff(tm). Required field.",
               "type": "string"
             },
+            "LocalWithDefault": {
+              "type": "string"
+            },
             "Maps": {
               "additionalProperties": {
                 "$ref": "#/components/schemas/test.mapped"
@@ -96,6 +99,15 @@ func (s Handler) OpenAPI() string {
                 "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -153,6 +165,15 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "description": "Describes Some Stuff(tm). Required field.",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
                 "type": "string"
               }
             }
@@ -216,6 +237,15 @@ func (s Handler) OpenAPI() string {
                 "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -276,6 +306,15 @@ func (s Handler) OpenAPI() string {
                 "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -333,6 +372,15 @@ func (s Handler) OpenAPI() string {
                 "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -388,6 +436,15 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "description": "Describes Some Stuff(tm). Required field.",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
                 "type": "string"
               }
             }
@@ -452,6 +509,15 @@ func (s Handler) OpenAPI() string {
                 "description": "Describes Some Stuff(tm). Required field.",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -505,6 +571,15 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "description": "Describes Some Stuff(tm). Required field.",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "local_default",
+              "required": true,
+              "schema": {
+                "default": "foobarbaz",
                 "type": "string"
               }
             }

@@ -125,6 +125,9 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		if err != nil {
 			return err
 		}
+		if props.defValue != "" {
+			fs.Value = fs.Value.WithDefault(props.defValue)
+		}
 
 		doc := docFromComment(f.name, props.name, f.doc)
 		switch props.location {
@@ -138,7 +141,6 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 				WithSchema(fs.Value).
 				WithRequired(props.required).
 				WithDescription(doc)
-
 			sc.AddParameter(q)
 		case "header":
 			q := openapi3.NewHeaderParameter(props.name).
@@ -283,6 +285,7 @@ type inProps struct {
 	name     string
 	location string
 	required bool
+	defValue string
 }
 
 func genInProps(tags string) *inProps {
@@ -302,8 +305,16 @@ func genInProps(tags string) *inProps {
 			continue
 		}
 		src2name := strings.SplitN(s, "=", 2)
-		ret.location = src2name[0]
-		ret.name = strings.Split(src2name[1], ",")[0]
+
+		directive := src2name[0]
+		value := src2name[1]
+		switch directive {
+		case "query", "header", "form", "body", "path":
+			ret.location = directive
+			ret.name = strings.Split(value, ",")[0]
+		case "default":
+			ret.defValue = value
+		}
 	}
 	return ret
 }

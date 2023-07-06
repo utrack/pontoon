@@ -19,6 +19,8 @@ type iterateRequest struct {
 	// Local describes Some Stuff(tm). Required field.
 	Local string `in:"query=local;required"`
 
+	LocalWithDefault string `in:"query=local_default;required;default=foobarbaz"`
+
 	SliceStrings []string `foo:"bar"`
 
 	Maps map[string]mapped `faa:"faw"`
