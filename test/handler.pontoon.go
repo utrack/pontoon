@@ -7,6 +7,14 @@ func (s Handler) OpenAPI() string {
 	return `{
     "components": {
       "schemas": {
+        "test.dummyStruct": {
+          "properties": {
+            "DummyField": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "test.iterateEmbedded": {
           "description": "Has an Embed comment",
           "properties": {
@@ -61,6 +69,18 @@ func (s Handler) OpenAPI() string {
             "Local",
             "LocalWithDefault"
           ],
+          "type": "object"
+        },
+        "test.jsonWithArrayOfStructs": {
+          "properties": {
+            "Ret": {
+              "items": {
+                "$ref": "#/components/schemas/test.dummyStruct"
+              },
+              "nullable": true,
+              "type": "array"
+            }
+          },
           "type": "object"
         },
         "test.jsonWithDirectives": {
@@ -659,6 +679,28 @@ func (s Handler) OpenAPI() string {
                     },
                     "nullable": true,
                     "type": "array"
+                  }
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/return/slice-in-struct": {
+        "get": {
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/test.jsonWithArrayOfStructs"
                   }
                 }
               },

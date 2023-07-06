@@ -48,6 +48,14 @@ type jsonWithDirectives struct {
 	RequiredOnly string `in:"required"`
 }
 
+type jsonWithArrayOfStructs struct {
+	Ret []dummyStruct
+}
+
+type dummyStruct struct {
+	DummyField string
+}
+
 var _ sdesc.Service = &Handler{}
 
 // IterateProducts comment
@@ -69,6 +77,10 @@ func (h Handler) zeroReturn(r *http.Request, req iterateRequest) error {
 }
 
 func (h Handler) sliceReturn(r *http.Request, req iterateRequest) ([]test2.IterateResponse, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) sliceInObjReturn(r *http.Request) (*jsonWithArrayOfStructs, error) {
 	return nil, errors.New("NIH")
 }
 

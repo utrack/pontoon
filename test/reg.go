@@ -18,6 +18,7 @@ func (h Handler) RegisterHTTP(mux sdesc.HTTPRouter) {
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/interface", h.ifaceReturn)
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/interface-any", h.ifaceReturnAny)
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/slice", h.sliceReturn)
+	mux.MethodFunc(http.MethodGet, "/v1/test/return/slice-in-struct", h.sliceInObjReturn)
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/map", h.mapReturn)
 
 	mux.MethodFunc(http.MethodGet, "/v1/test/request/jsonWithDirective", h.jsonWithDirs)
