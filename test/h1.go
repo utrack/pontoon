@@ -3,6 +3,7 @@ package test
 import (
 	"net/http"
 
+	"github.com/ggicci/httpin"
 	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/sdesc"
 	"github.com/utrack/pontoon/test2"
@@ -38,6 +39,15 @@ type iterateEmbedded struct {
 	PageToken string `in:"query=page_token"`
 }
 
+// jsonWithDirectives describes a JSON-marshaled request with additional 'in' directives.
+type jsonWithDirectives struct {
+	httpin.JSONBody
+
+	RequiredWithDefault string `json:"with_default,omitempty" in:"required;default=1234"`
+
+	RequiredOnly string `in:"required"`
+}
+
 var _ sdesc.Service = &Handler{}
 
 // IterateProducts comment
@@ -64,6 +74,10 @@ func (h Handler) sliceReturn(r *http.Request, req iterateRequest) ([]test2.Itera
 
 func (h Handler) mapReturn(r *http.Request, req iterateRequest) (map[string]test2.IterateResponse, error) {
 	return nil, errors.New("NIH")
+}
+
+func (h Handler) jsonWithDirs(r *http.Request, req jsonWithDirectives) error {
+	return errors.New("NIH")
 }
 
 func (h Handler) ServiceOptions() []sdesc.ServiceOption {

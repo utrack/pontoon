@@ -41,7 +41,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			if h.inout.inType != nil {
 				err := genInSchema(h.inout.inType, op)
 				if err != nil {
-					return nil, errors.Wrap(err, "generating input schema")
+					return nil, errors.Wrapf(err, "generating input schema for '%v'", h.path)
 				}
 			}
 
@@ -96,6 +96,8 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		t = t.isPtr
 	}
 
+	rootIsBody := false
+
 	for _, f := range t.isStruct.embeds {
 		if f.t.id == "github.com/ggicci/httpin.JSONBody" {
 			rs, err := genRefFieldStruct(t)
@@ -107,12 +109,17 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			sc.RequestBody = &openapi3.RequestBodyRef{
 				Value: body,
 			}
+			rootIsBody = true
 			continue
 		}
 		err := genInSchema(f.t, sc)
 		if err != nil {
 			return err
 		}
+	}
+
+	if rootIsBody {
+		return nil
 	}
 
 	for _, f := range t.isStruct.fields {
@@ -272,9 +279,18 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "processing embedded field '%v'", f.name)
 		}
-		fname := genFieldName(f.name, f.tags)
+		fname := genJSONFieldName(f.name, f.tags)
 		if fname == "-" {
 			continue
+		}
+		props := genInProps(f.tags)
+		if props != nil {
+			if props.required {
+				sc.Required = append(sc.Required, fname)
+			}
+			if props.defValue != "" {
+				ref.Value = ref.Value.WithDefault(props.defValue)
+			}
 		}
 		sc.Properties[fname] = ref
 	}
@@ -319,7 +335,7 @@ func genInProps(tags string) *inProps {
 	return ret
 }
 
-func genFieldName(name, tags string) string {
+func genJSONFieldName(name, tags string) string {
 	tags = strings.Trim(tags, "`")
 	tag := reflect.StructTag(tags)
 	ret := tag.Get("json")

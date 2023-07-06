@@ -30,6 +30,7 @@ func (s Handler) OpenAPI() string {
               "type": "string"
             },
             "LocalWithDefault": {
+              "default": "foobarbaz",
               "type": "string"
             },
             "Maps": {
@@ -56,6 +57,27 @@ func (s Handler) OpenAPI() string {
               "type": "array"
             }
           },
+          "required": [
+            "Local",
+            "LocalWithDefault"
+          ],
+          "type": "object"
+        },
+        "test.jsonWithDirectives": {
+          "description": "Describes a JSON-marshaled request with additional 'in' directives.",
+          "properties": {
+            "RequiredOnly": {
+              "type": "string"
+            },
+            "with_default": {
+              "default": "1234",
+              "type": "string"
+            }
+          },
+          "required": [
+            "with_default",
+            "RequiredOnly"
+          ],
           "type": "object"
         },
         "test.mapped": {
@@ -280,6 +302,33 @@ func (s Handler) OpenAPI() string {
             }
           },
           "summary": "Comment",
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/request/jsonWithDirective": {
+        "get": {
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/test.jsonWithDirectives"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {}
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
           "tags": [
             "test.Handler"
           ]
