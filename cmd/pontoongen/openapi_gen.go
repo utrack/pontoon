@@ -12,6 +12,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// l for location
+const (
+	lBody   = "body"
+	lQuery  = "query"
+	lHeader = "header"
+	lForm   = "form"
+	lPath   = "path"
+)
+
 func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 
 	paths := openapi3.Paths{}
@@ -285,6 +294,11 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 		}
 		props := genInProps(f.tags)
 		if props != nil {
+			// exclude not-body params from json-schema
+			switch props.location {
+			case lForm, lHeader, lQuery, lPath:
+				continue
+			}
 			if props.required {
 				sc.Required = append(sc.Required, fname)
 			}
@@ -325,7 +339,7 @@ func genInProps(tags string) *inProps {
 		directive := src2name[0]
 		value := src2name[1]
 		switch directive {
-		case "query", "header", "form", "body", "path":
+		case lBody, lForm, lHeader, lQuery, lPath:
 			ret.location = directive
 			ret.name = strings.Split(value, ",")[0]
 		case "default":
