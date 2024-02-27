@@ -84,6 +84,15 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 				}, nil
 			}
 			return b.getTypeDescCached(tu)
+		case *types.Interface:
+			if t.String() == "mime/multipart.File" {
+				return &typeDesc{
+					id:        "file",
+					name:      "file",
+					isSpecial: specialTypeFile,
+				}, nil
+			}
+			return b.getTypeDescCached(tu)
 		default:
 			return nil, errors.Errorf("unknown underlying type '%v' of Named '%v' (value '%v')", reflect.TypeOf(tu).String(), reflect.TypeOf(tt).String(), tt.String())
 		}

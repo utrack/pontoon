@@ -459,6 +459,11 @@ func genRefFieldSpecial(t *typeDesc) (*openapi3.SchemaRef, error) {
 		sc.Type = "string"
 		sc.Format = "date-time"
 		return openapi3.NewSchemaRef("", sc), nil
+	case specialTypeFile:
+		sc := openapi3.NewSchema()
+		sc.Type = "string"
+		sc.Format = "binary"
+		return openapi3.NewSchemaRef("", sc), nil
 	default:
 		panic(fmt.Sprintf("unsupported special field - t: %+v", t))
 	}

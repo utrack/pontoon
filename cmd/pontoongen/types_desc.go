@@ -9,6 +9,7 @@ type specialTypeType = uint
 const (
 	specialTypeNone specialTypeType = iota
 	specialTypeTime
+	specialTypeFile
 )
 
 type typeDesc struct {
