@@ -27,8 +27,9 @@ func (b builder) getHandlerNames(sel *types.Func) ([]hdlPathPtr, error) {
 		return nil, errors.New("cannot find exact func path")
 	}
 
-	funcBody := reg[0].(*ast.BlockStmt)
-	funcRouterParam := reg[1].(*ast.FuncDecl).Type.Params.List[0]
+	funcDecl := reg[0].(*ast.FuncDecl)
+	funcBody := funcDecl.Body
+	funcRouterParam := funcDecl.Type.Params.List[0]
 
 	vis := &visRegHTTP{
 		muxDecl: funcRouterParam,
