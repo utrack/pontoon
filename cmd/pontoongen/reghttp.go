@@ -72,12 +72,17 @@ func (vr *visRegHTTP) Visit(node ast.Node) ast.Visitor {
 		return vr
 	}
 
+	funcSelector, ok := cv.Args[2].(*ast.SelectorExpr)
+	if !ok {
+		return vr
+	}
+
 	argOp,
 		argPath,
 		argHandlerFunc :=
 		vr.litFromExpr(cv.Args[0]),
 		vr.litFromExpr(cv.Args[1]),
-		cv.Args[2].(*ast.SelectorExpr)
+		funcSelector
 
 	vr.hits = append(vr.hits, hdlPathPtr{
 		op:   strings.Trim(argOp.Value, `"`),
@@ -96,6 +101,9 @@ func (vr *visRegHTTP) litFromExpr(ex ast.Node) *ast.BasicLit {
 		return vr.litFromExpr(vv)
 	case *ast.SelectorExpr: // usually reference from another package
 		pkg := findImportedPackage(vr.pkg, v.X.(*ast.Ident).Name)
+		if pkg == nil {
+			return nil
+		}
 		obj := pkg.Scope().Lookup(v.Sel.Name)
 
 		f, _ := astFindFile(vr.pkgReg.Imports[pkg.Path()], obj.Pos())
