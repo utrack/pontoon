@@ -17,12 +17,6 @@ func (s Handler) OpenAPI() string {
         },
         "test.iterateEmbedded": {
           "description": "Has an Embed comment",
-          "properties": {
-            "PageToken": {
-              "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
-              "type": "string"
-            }
-          },
           "type": "object"
         },
         "test.iterateRequest": {
@@ -33,14 +27,6 @@ func (s Handler) OpenAPI() string {
           ],
           "description": "Request comment\nRequest line 2",
           "properties": {
-            "Local": {
-              "description": "Describes Some Stuff(tm). Required field.",
-              "type": "string"
-            },
-            "LocalWithDefault": {
-              "default": "foobarbaz",
-              "type": "string"
-            },
             "Maps": {
               "additionalProperties": {
                 "$ref": "#/components/schemas/test.mapped"
@@ -65,10 +51,6 @@ func (s Handler) OpenAPI() string {
               "type": "array"
             }
           },
-          "required": [
-            "Local",
-            "LocalWithDefault"
-          ],
           "type": "object"
         },
         "test.jsonWithArrayOfStructs": {
@@ -130,6 +112,14 @@ func (s Handler) OpenAPI() string {
               "schema": {
                 "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
               }
             },
             {
@@ -198,6 +188,14 @@ func (s Handler) OpenAPI() string {
               "schema": {
                 "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
               }
             },
             {
@@ -268,6 +266,14 @@ func (s Handler) OpenAPI() string {
               "schema": {
                 "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
               }
             },
             {
@@ -367,6 +373,14 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            {
               "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
@@ -433,6 +447,14 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            {
               "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
@@ -496,6 +518,14 @@ func (s Handler) OpenAPI() string {
               "schema": {
                 "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
               }
             },
             {
@@ -570,6 +600,14 @@ func (s Handler) OpenAPI() string {
               }
             },
             {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            {
               "description": "Describes Some Stuff(tm). Required field.",
               "in": "query",
               "name": "local",
@@ -631,6 +669,14 @@ func (s Handler) OpenAPI() string {
               "schema": {
                 "description": "A token for the next page.\nPass an empty PageToken if you want to request the first page,\nand use a token from the response as PageToken to get the next page.",
                 "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "foo",
+              "schema": {
+                "format": "int64",
+                "type": "integer"
               }
             },
             {

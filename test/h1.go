@@ -17,6 +17,9 @@ type Handler struct {
 // Request line 2
 type iterateRequest struct {
 	iterateEmbedded
+
+	Foo int64 `in:"query=foo"`
+
 	// Local describes Some Stuff(tm). Required field.
 	Local string `in:"query=local;required"`
 
