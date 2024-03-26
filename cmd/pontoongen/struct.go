@@ -111,7 +111,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		return nil, errors.Errorf("unknown Type of '%v' (value '%v')", reflect.TypeOf(tt).String(), tt.String())
 	}
 	t := tt.(*types.Named)
-	docs, err := b.getStructDocs(t.Obj().Pos())
+	docs, err := b.getStructDocs(t.Obj().Pos(), t.Obj().Name())
 	if err != nil {
 		return nil, errors.Wrap(err, "when extracting struct docs")
 	}
@@ -155,7 +155,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	return &ret, nil
 }
 
-func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
+func (b *builder) getStructDocs(pos token.Pos, name string) (*structDoc, error) {
 	f, err := b.astFindFile(pos)
 	if err != nil {
 		return &structDoc{}, nil
@@ -164,6 +164,8 @@ func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
 	}
 	reg, _ := astutil.PathEnclosingInterval(f, pos-1, pos)
 
+	//find the 'type' in type Foo struct
+	// it can have more than one type if it's type (A B C) syntax
 	anode := reg[0].(*ast.GenDecl)
 
 	desc := structDoc{
@@ -174,10 +176,25 @@ func (b *builder) getStructDocs(pos token.Pos) (*structDoc, error) {
 		desc.Doc = anode.Doc.Text()
 	}
 
-	if len(anode.Specs) != 1 {
-		return nil, errors.Errorf("Specs length is '%v', expected 1", len(anode.Specs))
+	var spec *ast.TypeSpec
+	for _, node := range anode.Specs {
+		typeSpec, ok := node.(*ast.TypeSpec)
+		if !ok {
+			continue
+		}
+		if typeSpec.Name.String() == name {
+			spec = typeSpec
+			break
+		}
 	}
-	spec := anode.Specs[0].(*ast.TypeSpec)
+
+	if spec == nil {
+		return nil, errors.Errorf("Could not find a struct definition in the type() block; looking for '%v'", name)
+	}
+
+	if spec.Doc != nil {
+		desc.Doc = spec.Doc.Text()
+	}
 
 	stype := spec.Type.(*ast.StructType)
 
