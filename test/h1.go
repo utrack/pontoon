@@ -3,7 +3,6 @@ package test
 import (
 	"net/http"
 
-	"github.com/ggicci/httpin"
 	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/sdesc"
 	"github.com/utrack/pontoon/test2"
@@ -44,8 +43,6 @@ type iterateEmbedded struct {
 
 // jsonWithDirectives describes a JSON-marshaled request with additional 'in' directives.
 type jsonWithDirectives struct {
-	httpin.JSONBody
-
 	RequiredWithDefault string `json:"with_default,omitempty" in:"required;default=1234"`
 
 	RequiredOnly string `in:"required"`
