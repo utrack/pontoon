@@ -48,7 +48,20 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
-				err := genInSchema(h.inout.inType, op)
+				httpMethod := strings.ToUpper(h.op)
+				if httpMethod != "GET" && httpMethod != "DELETE" {
+					rs, err := genRefFieldStruct(h.inout.inType)
+					if err != nil {
+						return nil, errors.Wrap(err, "generating input schema")
+					}
+
+					body := openapi3.NewRequestBody().WithJSONSchemaRef(rs)
+					op.RequestBody = &openapi3.RequestBodyRef{
+						Value: body,
+					}
+				}
+
+				err = genInSchema(h.inout.inType, op)
 				if err != nil {
 					return nil, errors.Wrapf(err, "generating input schema for '%v'", h.path)
 				}
@@ -105,30 +118,11 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		t = t.isPtr
 	}
 
-	rootIsBody := false
-
 	for _, f := range t.isStruct.embeds {
-		if f.t.id == "github.com/ggicci/httpin.JSONBody" {
-			rs, err := genRefFieldStruct(t)
-			if err != nil {
-				return err
-			}
-
-			body := openapi3.NewRequestBody().WithJSONSchemaRef(rs)
-			sc.RequestBody = &openapi3.RequestBodyRef{
-				Value: body,
-			}
-			rootIsBody = true
-			continue
-		}
 		err := genInSchema(f.t, sc)
 		if err != nil {
 			return err
 		}
-	}
-
-	if rootIsBody {
-		return nil
 	}
 
 	for _, f := range t.isStruct.fields {
@@ -272,10 +266,6 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	sc.Description = docFromComment(t.name, "", t.doc)
 
 	for _, e := range t.isStruct.embeds {
-		if e.t.id == "github.com/ggicci/httpin.JSONBody" {
-			continue
-		}
-
 		ref, err := genFieldSchema(e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "processing embedded field '%v'", e.name)
