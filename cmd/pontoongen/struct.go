@@ -85,7 +85,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			}
 			return b.getTypeDescCached(tu)
 		case *types.Interface:
-			if t.String() == "mime/multipart.File" {
+			if t.String() == "mime/multipart.File" || t.String() == "github.com/ggicci/httpin/core.File" {
 				return &typeDesc{
 					id:        "file",
 					name:      "file",
