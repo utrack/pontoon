@@ -110,6 +110,8 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	default:
 		return nil, errors.Errorf("unknown Type of '%v' (value '%v')", reflect.TypeOf(tt).String(), tt.String())
 	}
+	// struct follows
+
 	t := tt.(*types.Named)
 	docs, err := b.getStructDocs(t.Obj().Pos(), t.Obj().Name())
 	if err != nil {
@@ -129,6 +131,14 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		ret.isStruct = nil
 		ret.isSpecial = specialTypeTime
 		return &ret, nil
+	}
+
+	if ret.name == "github.com/ggicci/httpin/core.File" {
+		return &typeDesc{
+			id:        "file",
+			name:      "file",
+			isSpecial: specialTypeFile,
+		}, nil
 	}
 
 	for i := 0; i < st.NumFields(); i++ {
