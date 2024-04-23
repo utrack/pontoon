@@ -133,12 +133,10 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		return &ret, nil
 	}
 
-	if ret.name == "github.com/ggicci/httpin/core.File" {
-		return &typeDesc{
-			id:        "file",
-			name:      "file",
-			isSpecial: specialTypeFile,
-		}, nil
+	if t.String() == "github.com/ggicci/httpin/core.File" {
+		ret.isStruct = nil
+		ret.isSpecial = specialTypeFile
+		return &ret, nil
 	}
 
 	for i := 0; i < st.NumFields(); i++ {

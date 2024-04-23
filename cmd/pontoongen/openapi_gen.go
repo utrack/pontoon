@@ -164,6 +164,42 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 				WithRequired(props.required).
 				WithDescription(doc)
 			sc.AddParameter(q)
+		case "form":
+			if f.t.isSpecial != specialTypeFile {
+				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v'", f.name)
+			}
+
+			// TODO this generates ONLY multipart/form-data!
+			if sc.RequestBody == nil {
+				sc.RequestBody = &openapi3.RequestBodyRef{}
+			}
+
+			var curMediaSchema *openapi3.SchemaRef
+
+			if sc.RequestBody.Value != nil &&
+				sc.RequestBody.Value.Content != nil {
+				curMedia := sc.RequestBody.Value.Content.Get("multipart/form-data")
+				if curMedia != nil {
+					curMediaSchema = curMedia.Schema
+				}
+			}
+
+			if curMediaSchema == nil {
+				curMediaSchema = openapi3.NewObjectSchema().NewRef()
+				curMediaSchema.Value = &openapi3.Schema{}
+			}
+
+			if curMediaSchema.Value.Properties == nil {
+				curMediaSchema.Value.Properties = openapi3.Schemas{}
+			}
+			curMediaSchema.Value.Type = openapi3.TypeObject
+
+			curMediaSchema.Value.Properties[props.name] = fs
+
+			sc.RequestBody.Value = openapi3.
+				NewRequestBody().
+				WithFormDataSchemaRef(curMediaSchema)
+
 		default:
 			return errors.Errorf("unknown in source type '%v' for field '%v'", props.location, f.name)
 		}
