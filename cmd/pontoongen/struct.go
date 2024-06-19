@@ -27,7 +27,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 
 	switch t := tt.(type) {
 	case *types.Basic:
-		return &typeDesc{isScalar: true, id: t.Name(), name: t.Name()}, nil
+		return &typeDesc{isScalar: true, id: t.Name(), typeName: t.Name()}, nil
 	case *types.Chan:
 		return nil, nil
 	case *types.Slice:
@@ -37,7 +37,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		}
 		return &typeDesc{
 			id:   "[]" + ut.id,
-			name: t.String(),
+			typeName: t.String(),
 			isSlice: &descSlice{
 				t: ut,
 			},
@@ -53,7 +53,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		}
 		return &typeDesc{
 			id:   "map[" + key.id + "]" + value.id,
-			name: t.String(),
+			typeName: t.String(),
 			isMap: &descMap{
 				key:   key,
 				value: value,
@@ -65,7 +65,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		}
 		return &typeDesc{
 			id:    "*" + ut.id,
-			name:  t.String(),
+			typeName:  t.String(),
 			isPtr: ut,
 		}, nil
 	case *types.Named:
@@ -79,7 +79,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			if t.String() == "encoding/json.RawMessage" {
 				return &typeDesc{
 					id:    "any",
-					name:  "any",
+					typeName:  "any",
 					isAny: true,
 				}, nil
 			}
@@ -88,7 +88,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			if t.String() == "mime/multipart.File" || t.String() == "github.com/ggicci/httpin/core.File" {
 				return &typeDesc{
 					id:        "file",
-					name:      "file",
+					typeName:      "file",
 					isSpecial: specialTypeFile,
 				}, nil
 			}
@@ -104,7 +104,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		}
 		return &typeDesc{
 			id:    "any",
-			name:  "any",
+			typeName:  "any",
 			isAny: true,
 		}, nil
 	default:
@@ -122,12 +122,12 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 
 	ret := typeDesc{
 		id:       t.Obj().Pkg().Path() + "." + t.Obj().Name(),
-		name:     t.Obj().Pkg().Name() + "." + t.Obj().Name(),
+		typeName:     t.Obj().Pkg().Name() + "." + t.Obj().Name(),
 		doc:      docs.Doc,
 		isStruct: &descStruct{},
 	}
 
-	if ret.name == "time.Time" {
+	if ret.typeName == "time.Time" {
 		ret.isStruct = nil
 		ret.isSpecial = specialTypeTime
 		return &ret, nil

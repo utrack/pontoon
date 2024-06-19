@@ -14,7 +14,7 @@ const (
 
 type typeDesc struct {
 	id       string
-	name     string
+	typeName string
 	doc      string
 	isScalar bool
 

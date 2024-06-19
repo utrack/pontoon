@@ -12,8 +12,8 @@ type serviceDesc struct {
 }
 
 type hdlDesc struct {
-	op          string
 	goFuncName  string
+	httpVerb    string
 	path        string
 	description string
 	inout       hdlTypesDesc

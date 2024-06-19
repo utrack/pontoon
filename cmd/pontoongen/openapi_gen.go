@@ -48,18 +48,18 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			op.Tags = []string{s.name}
 
 			if h.inout.inType != nil {
-				httpMethod := strings.ToUpper(h.op)
-				if httpMethod != "GET" && httpMethod != "DELETE" {
-					rs, err := genRefFieldStruct(h.inout.inType)
-					if err != nil {
-						return nil, errors.Wrap(err, "generating input schema")
-					}
+				// httpMethod := strings.ToUpper(h.httpVerb)
+				// if httpMethod != "GET" && httpMethod != "DELETE" {
+				// 	rs, err := genRefFieldStruct(h.inout.inType)
+				// 	if err != nil {
+				// 		return nil, errors.Wrap(err, "generating input schema")
+				// 	}
 
-					body := openapi3.NewRequestBody().WithJSONSchemaRef(rs)
-					op.RequestBody = &openapi3.RequestBodyRef{
-						Value: body,
-					}
-				}
+				// 	body := openapi3.NewRequestBody().WithJSONSchemaRef(rs)
+				// 	op.RequestBody = &openapi3.RequestBodyRef{
+				// 		Value: body,
+				// 	}
+				// }
 
 				err = genInSchema(h.inout.inType, op)
 				if err != nil {
@@ -76,7 +76,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			rsp = rsp.WithDescription("success")
 			rsp.Content = openapi3.NewContentWithJSONSchemaRef(out)
 			op.AddResponse(200, rsp)
-			p.SetOperation(h.op, op)
+			p.SetOperation(h.httpVerb, op)
 		}
 	}
 
@@ -87,7 +87,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			continue
 		}
 
-		comp.Schemas[d.name] = openapi3.NewSchemaRef("", t.Value)
+		comp.Schemas[d.typeName] = openapi3.NewSchemaRef("", t.Value)
 	}
 
 	root := openapi3.T{}
@@ -125,6 +125,37 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		}
 	}
 
+	hasGgicciAnnotations := false
+
+	// if there are no ggicci/httpin annotations at all - assume it's all JSON
+	for _, f := range t.isStruct.fields {
+		props := genInProps(f.tags)
+		if props != nil && props.location != "" {
+			hasGgicciAnnotations = true
+			break
+		}
+	}
+
+	if !hasGgicciAnnotations {
+		desc := descField{
+			name: t.typeName,
+			doc:  t.doc,
+			t:    t,
+		}
+		fs, err := genFieldSchema(desc)
+		if err != nil {
+			return err
+		}
+		if sc.RequestBody != nil && sc.RequestBody.Value != nil {
+			return errors.Errorf("multiple JSON bodies declared for a handler, previous: '%v' current '%v'", sc.RequestBody.Ref, fs.Ref)
+		}
+		body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(t.doc)
+		sc.RequestBody = &openapi3.RequestBodyRef{
+			Value: body,
+		}
+		return nil
+	}
+
 	for _, f := range t.isStruct.fields {
 		props := genInProps(f.tags)
 		if props == nil {
@@ -143,6 +174,9 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		switch props.location {
 		case "body":
 			body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(doc)
+			if sc.RequestBody != nil && sc.RequestBody.Value != nil {
+				return errors.Errorf("multiple JSON bodies declared for a handler")
+			}
 			sc.RequestBody = &openapi3.RequestBodyRef{
 				Value: body,
 			}
@@ -294,12 +328,12 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 	sc := openapi3.NewSchema()
 	sc.Properties = openapi3.Schemas{}
-	ref := "#/components/schemas/" + t.name
+	ref := "#/components/schemas/" + t.typeName
 	ret := openapi3.NewSchemaRef(ref, sc)
 	cacheSchemaRefs[t] = ret
 
 	sc.Type = "object"
-	sc.Description = docFromComment(t.name, "", t.doc)
+	sc.Description = docFromComment(t.typeName, "", t.doc)
 
 	for _, e := range t.isStruct.embeds {
 		ref, err := genFieldSchema(e)
@@ -403,7 +437,7 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 
 	sc := openapi3.NewSchema()
 
-	switch t.name {
+	switch t.typeName {
 	case "int32":
 		sc.Type = "integer"
 		sc.Format = "int32"
@@ -435,7 +469,7 @@ func genRefFieldScalar(t *typeDesc) (*openapi3.SchemaRef, error) {
 	case "bool":
 		sc.Type = "boolean"
 	default:
-		return nil, errors.Errorf("unknown scalar field type '%v'", t.name)
+		return nil, errors.Errorf("unknown scalar field type '%v'", t.typeName)
 	}
 	return openapi3.NewSchemaRef("", sc), nil
 }
@@ -450,7 +484,7 @@ func genRefFieldSlice(t *typeDesc) (*openapi3.SchemaRef, error) {
 	}
 
 	// Represent []byte as string with byte format
-	if t.isSlice.t.name == "byte" {
+	if t.isSlice.t.typeName == "byte" {
 		sc := openapi3.NewSchema()
 		sc.Type = "string"
 		sc.Format = "byte"
@@ -553,6 +587,12 @@ func annotateHandler(h hdlDesc, op *openapi3.Operation) error {
 	}
 	op.Summary = summary
 	op.Description = desc
+
+	pathCamelCase := strings.ReplaceAll(h.path, "/", "_")
+	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
+	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
+	pathCamelCase = strings.TrimPrefix(pathCamelCase, "_")
+	op.OperationID = strings.ToLower(pathCamelCase + "_" + h.httpVerb)
 
 	if strings.Contains(desc, "\nDeprecated:") {
 		op.Deprecated = true
