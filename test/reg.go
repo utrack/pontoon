@@ -9,6 +9,7 @@ import (
 func (h Handler) RegisterHTTP(mux sdesc.HTTPRouter) {
 	// POST
 	mux.MethodFunc(http.MethodPost, "/v1/products/iterate/create", h.iterateProducts)
+	mux.MethodFunc(http.MethodPost, "/v1/test/get-nonannot-json-embed", h.nonAnnotIn)
 	// GET
 	mux.MethodFunc(http.MethodGet, "/v1/products/iterate", h.iterateProducts)
 	// Same path as above, different ops

@@ -85,6 +85,28 @@ func (s Handler) OpenAPI() string {
         "test.mapped": {
           "type": "object"
         },
+        "test.nonAnnotJSON": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/test.nonAnnotJSON2"
+            }
+          ],
+          "description": "Represents a 'raw' JSON struct without annotations with an embed no-annotated one",
+          "properties": {
+            "foo": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "test.nonAnnotJSON2": {
+          "properties": {
+            "bar": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "test2.IterateResponse": {
           "properties": {
             "resp": {
@@ -331,6 +353,37 @@ func (s Handler) OpenAPI() string {
             }
           },
           "summary": "Comment",
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/get-nonannot-json-embed": {
+        "post": {
+          "operationId": "v1_test_get-nonannot-json-embed_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/test.nonAnnotJSON"
+                }
+              }
+            },
+            "description": "nonAnnotJSON represents a 'raw' JSON struct without annotations with an embed no-annotated one\n"
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
           "tags": [
             "test.Handler"
           ]

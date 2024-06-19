@@ -118,17 +118,16 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		t = t.isPtr
 	}
 
-	for _, f := range t.isStruct.embeds {
-		err := genInSchema(f.t, sc)
-		if err != nil {
-			return err
-		}
-	}
-
 	hasGgicciAnnotations := false
-
 	// if there are no ggicci/httpin annotations at all - assume it's all JSON
 	for _, f := range t.isStruct.fields {
+		props := genInProps(f.tags)
+		if props != nil && props.location != "" {
+			hasGgicciAnnotations = true
+			break
+		}
+	}
+	for _, f := range t.isStruct.embeds {
 		props := genInProps(f.tags)
 		if props != nil && props.location != "" {
 			hasGgicciAnnotations = true
@@ -147,13 +146,20 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			return err
 		}
 		if sc.RequestBody != nil && sc.RequestBody.Value != nil {
-			return errors.Errorf("multiple JSON bodies declared for a handler, previous: '%v' current '%v'", sc.RequestBody.Ref, fs.Ref)
+			return errors.Errorf("multiple JSON bodies declared in a handler struct, current '%v'", fs.Ref)
 		}
 		body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(t.doc)
 		sc.RequestBody = &openapi3.RequestBodyRef{
 			Value: body,
 		}
 		return nil
+	}
+
+	for _, f := range t.isStruct.embeds {
+		err := genInSchema(f.t, sc)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, f := range t.isStruct.fields {
@@ -175,7 +181,7 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 		case "body":
 			body := openapi3.NewRequestBody().WithJSONSchemaRef(fs).WithDescription(doc)
 			if sc.RequestBody != nil && sc.RequestBody.Value != nil {
-				return errors.Errorf("multiple JSON bodies declared for a handler")
+				return errors.Errorf("multiple JSON bodies declared in a handler struct")
 			}
 			sc.RequestBody = &openapi3.RequestBodyRef{
 				Value: body,

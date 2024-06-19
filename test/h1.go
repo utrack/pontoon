@@ -41,6 +41,17 @@ type iterateEmbedded struct {
 	PageToken string `in:"query=page_token"`
 }
 
+// nonAnnotJSON represents a 'raw' JSON struct without annotations with an embed no-annotated one
+type nonAnnotJSON struct {
+	//TODO *nonAnnotJSON blows up the stack
+	nonAnnotJSON2
+	Foo string `json:"foo"`
+}
+
+type nonAnnotJSON2 struct {
+	Bar string `json:"bar"`
+}
+
 // jsonWithDirectives describes a JSON-marshaled request with additional 'in' directives.
 type jsonWithDirectives struct {
 	RequiredWithDefault string `json:"with_default,omitempty" in:"required;default=1234"`
@@ -61,6 +72,10 @@ var _ sdesc.Service = &Handler{}
 // IterateProducts comment
 // Includes imported package
 func (h Handler) iterateProducts(r *http.Request, req iterateRequest) (*test2.IterateResponse, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) nonAnnotIn(r *http.Request, req nonAnnotJSON) (interface{}, error) {
 	return nil, errors.New("NIH")
 }
 

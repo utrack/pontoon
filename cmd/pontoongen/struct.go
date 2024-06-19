@@ -36,7 +36,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "creating typedesc for '%v'", t.String())
 		}
 		return &typeDesc{
-			id:   "[]" + ut.id,
+			id:       "[]" + ut.id,
 			typeName: t.String(),
 			isSlice: &descSlice{
 				t: ut,
@@ -52,7 +52,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "parsing value type of map '%v'", t.String())
 		}
 		return &typeDesc{
-			id:   "map[" + key.id + "]" + value.id,
+			id:       "map[" + key.id + "]" + value.id,
 			typeName: t.String(),
 			isMap: &descMap{
 				key:   key,
@@ -64,9 +64,9 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Wrapf(err, "parsing ptr value of '%v'", t.String())
 		}
 		return &typeDesc{
-			id:    "*" + ut.id,
-			typeName:  t.String(),
-			isPtr: ut,
+			id:       "*" + ut.id,
+			typeName: t.String(),
+			isPtr:    ut,
 		}, nil
 	case *types.Named:
 		switch tu := t.Underlying().(type) {
@@ -78,9 +78,9 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		case *types.Slice:
 			if t.String() == "encoding/json.RawMessage" {
 				return &typeDesc{
-					id:    "any",
-					typeName:  "any",
-					isAny: true,
+					id:       "any",
+					typeName: "any",
+					isAny:    true,
 				}, nil
 			}
 			return b.getTypeDescCached(tu)
@@ -88,7 +88,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			if t.String() == "mime/multipart.File" || t.String() == "github.com/ggicci/httpin/core.File" {
 				return &typeDesc{
 					id:        "file",
-					typeName:      "file",
+					typeName:  "file",
 					isSpecial: specialTypeFile,
 				}, nil
 			}
@@ -103,9 +103,9 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			return nil, errors.Errorf("don't know how to present interface '%v' in OpenAPI", t.String())
 		}
 		return &typeDesc{
-			id:    "any",
-			typeName:  "any",
-			isAny: true,
+			id:       "any",
+			typeName: "any",
+			isAny:    true,
 		}, nil
 	default:
 		return nil, errors.Errorf("unknown Type of '%v' (value '%v')", reflect.TypeOf(tt).String(), tt.String())
@@ -122,7 +122,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 
 	ret := typeDesc{
 		id:       t.Obj().Pkg().Path() + "." + t.Obj().Name(),
-		typeName:     t.Obj().Pkg().Name() + "." + t.Obj().Name(),
+		typeName: t.Obj().Pkg().Name() + "." + t.Obj().Name(),
 		doc:      docs.Doc,
 		isStruct: &descStruct{},
 	}
