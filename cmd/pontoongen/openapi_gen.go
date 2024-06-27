@@ -205,9 +205,9 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 				WithDescription(doc)
 			sc.AddParameter(q)
 		case "form":
-			if f.t.isSpecial != specialTypeFile {
-				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v'", f.name)
-			}
+			//if f.t.isSpecial != specialTypeFile {
+			//	return errors.Errorf("don't know how to render non-multipart forms yet, field '%v'", f.name)
+			//}
 
 			// TODO this generates ONLY multipart/form-data!
 			if sc.RequestBody == nil {
@@ -595,8 +595,6 @@ func annotateHandler(h hdlDesc, op *openapi3.Operation) error {
 	op.Description = desc
 
 	pathCamelCase := strings.ReplaceAll(h.path, "/", "_")
-	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
-	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
 	pathCamelCase = strings.TrimPrefix(pathCamelCase, "_")
 	op.OperationID = strings.ToLower(pathCamelCase + "_" + h.httpVerb)
 
