@@ -595,8 +595,8 @@ func annotateHandler(h hdlDesc, op *openapi3.Operation) error {
 	op.Description = desc
 
 	pathCamelCase := strings.ReplaceAll(h.path, "/", "_")
-	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
-	pathCamelCase = strings.ReplaceAll(pathCamelCase, "x", "_")
+	pathCamelCase = strings.ReplaceAll(pathCamelCase, "{", "_")
+	pathCamelCase = strings.ReplaceAll(pathCamelCase, "}", "_")
 	pathCamelCase = strings.TrimPrefix(pathCamelCase, "_")
 	op.OperationID = strings.ToLower(pathCamelCase + "_" + h.httpVerb)
 
