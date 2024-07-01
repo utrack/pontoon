@@ -133,8 +133,9 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		return &ret, nil
 	}
 
-	if ret.typeName == "github.com/ggicci/httpin/core.File" ||
-		ret.typeName == "*github.com/ggicci/httpin/core.File" {
+	if t.String() == "github.com/ggicci/httpin/core.File" ||
+		t.String() == "github.com/ggicci/httpin/*core.File" ||
+		t.String() == "*github.com/ggicci/httpin/core.File" {
 		ret.isStruct = nil
 		ret.isSpecial = specialTypeFile
 		return &ret, nil
