@@ -205,8 +205,12 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 				WithDescription(doc)
 			sc.AddParameter(q)
 		case "form":
-			if f.t.isSpecial != specialTypeFile {
-				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v'", f.name)
+			t := f.t
+			if f.t.isPtr != nil {
+				t = f.t.isPtr
+			}
+			if t.isSpecial != specialTypeFile {
+				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v', type '%v'", f.name, f.t.typeName)
 			}
 
 			// TODO this generates ONLY multipart/form-data!
