@@ -147,6 +147,7 @@ func getDescType(pkg *packages.Package) (*types.Interface, *types.Interface, err
 		return nil, nil, nil
 	}
 	t := decl.Type().Underlying().(*types.Interface)
+	// TODO if struct - old Pontoon!
 
 	declMux := pkg.Types.Scope().Lookup("HTTPRouter")
 	tMux := declMux.Type().Underlying().(*types.Interface)

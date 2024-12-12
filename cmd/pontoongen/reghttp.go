@@ -77,12 +77,15 @@ func (vr *visRegHTTP) Visit(node ast.Node) ast.Visitor {
 		return vr
 	}
 
-	argOp,
-		argPath,
-		argHandlerFunc :=
-		vr.litFromExpr(cv.Args[0]),
-		vr.litFromExpr(cv.Args[1]),
-		funcSelector
+	argOp, err := vr.litFromExpr(cv.Args[0])
+	if err != nil {
+		panic(err) // TODO: change to error pass
+	}
+	argPath, err := vr.litFromExpr(cv.Args[1])
+	if err != nil {
+		panic(err) // TODO: change to error pass
+	}
+	argHandlerFunc := funcSelector
 
 	vr.hits = append(vr.hits, hdlPathPtr{
 		op:   strings.Trim(argOp.Value, `"`),
@@ -92,17 +95,17 @@ func (vr *visRegHTTP) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
-func (vr *visRegHTTP) litFromExpr(ex ast.Node) *ast.BasicLit {
+func (vr *visRegHTTP) litFromExpr(ex ast.Node) (*ast.BasicLit, error) {
 	switch v := ex.(type) {
 	case *ast.BasicLit:
-		return v
+		return v, nil
 	case *ast.Ident:
 		vv := v.Obj.Decl.(*ast.ValueSpec).Values[0]
 		return vr.litFromExpr(vv)
 	case *ast.SelectorExpr: // usually reference from another package
 		pkg := findImportedPackage(vr.pkg, v.X.(*ast.Ident).Name)
 		if pkg == nil {
-			return nil
+			return nil, nil
 		}
 		obj := pkg.Scope().Lookup(v.Sel.Name)
 
@@ -121,6 +124,8 @@ func (vr *visRegHTTP) litFromExpr(ex ast.Node) *ast.BasicLit {
 		return vr.litFromExpr(ecl[0].(*ast.GenDecl).Specs[0])
 	case *ast.ValueSpec:
 		return vr.litFromExpr(v.Names[0])
+	case *ast.CallExpr:
+		return nil, errors.New("cannot extract a const string from a function, please change your func to a constant")
 	default:
 		panic(fmt.Sprintf("litFromExpr: cannot convert %v (%v) to BasicLit", ex, reflect.TypeOf(ex).String()))
 	}
