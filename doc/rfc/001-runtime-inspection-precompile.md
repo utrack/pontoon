@@ -149,6 +149,45 @@ func main() {
 //go:build !docgen
 ```
 
+## Implementation Details
+
+The implementation consists of several key components:
+
+1. **Documentation Generation**
+   - Service documentation is extracted using Go's type system and AST analysis
+   - Type information is recursively gathered, including field details and comments
+   - Output is generated in YAML format for better readability and maintainability
+
+2. **Type Documentation**
+   - Each type includes:
+     - Package path and name
+     - File location and line number
+     - Comments and struct tags
+     - Field information including nullability and embedding
+     - Special handling for arrays and maps
+
+3. **Generated Output**
+   - YAML-based documentation is embedded in Go source files
+   - Generated files include checksum for source tracking
+   - Output preserves all type relationships and documentation
+
+4. **Key Features**
+   - Deduplication of types across services
+   - Support for embedded fields
+   - Proper handling of nullable types
+   - Array and map type preservation
+   - Comprehensive field documentation
+
+## Rationale
+
+YAML was chosen over TOML for several reasons:
+1. Better readability for nested structures
+2. Wider adoption in the Go ecosystem
+3. More natural representation of arrays and maps
+4. Better support for multiline strings
+
+The implementation maintains backward compatibility while improving the documentation format and adding support for more detailed type information.
+
 ## Error Handling
 1. **Parse Errors**
    - Log detailed error with file and line number
