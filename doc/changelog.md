@@ -8,6 +8,11 @@
   - Implemented AST walker for extracting comments from Go source code
   - Added TOML generation with checksums for documentation storage
   - Created `docgen` command line tool for documentation generation
+- OpenAPI schema generation with httpin tag support
+  - Added `httpinmeditate` package for OpenAPI schema generation
+  - Implemented introspection of httpin-annotated structs
+  - Added support for nested parameters and request bodies
+  - Added extension support for parameter locations (path, query, header, cookie)
 
 ### Changed
 - Migrated documentation format from TOML to YAML for better readability and maintainability

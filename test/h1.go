@@ -91,6 +91,11 @@ func (h Handler) zeroReturn(r *http.Request, req iterateRequest) error {
 	return errors.New("NIH")
 }
 
+// This is a "raw" handler that cannot be annotated.
+func (h Handler) rawHandler(r *http.Request, w http.ResponseWriter) {
+
+}
+
 func (h Handler) sliceReturn(r *http.Request, req iterateRequest) ([]test2.IterateResponse, error) {
 	return nil, errors.New("NIH")
 }

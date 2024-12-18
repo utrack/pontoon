@@ -116,8 +116,8 @@ This feature aims to improve documentation generation by combining the strengths
    - Conflicts indicate need for documentation regeneration
 
 ### Implementation Priorities
-1. Compile-time parser implementation
-2. Runtime model generation
+1. Compile-time parser implementation - [RFC](/doc/rfc/001-runtime-inspection-precompile.md)
+2. Runtime model generation - [RFC](/doc/rfc/001-runtime-inspection-introspection.md)
 3. Documentation merger with conflict detection
 
 ### Future Considerations

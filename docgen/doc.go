@@ -60,6 +60,7 @@ type MethodDoc struct {
 	Line       int
 	InputType  string
 	OutputType string
+	ReturnsWellFormedError bool
 }
 
 // TypeDoc represents documentation for a type.

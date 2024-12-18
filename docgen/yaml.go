@@ -24,18 +24,19 @@ type YAMLService struct {
 	PkgPath string            `yaml:"pkg_path"`
 	Name    string            `yaml:"type_name"`
 	File    string            `yaml:"file"`
-	Line    int              `yaml:"line"`
-	Comment string           `yaml:"comment,omitempty"`
+	Line    int               `yaml:"line"`
+	Comment string            `yaml:"comment,omitempty"`
 	Methods map[string]Method `yaml:"methods,omitempty"`
 }
 
 // Method represents a service method in YAML format.
 type Method struct {
-	Comment    string `yaml:"comment,omitempty"`
-	File       string `yaml:"file"`
-	Line       int    `yaml:"line"`
-	InputType  string `yaml:"input_type,omitempty"`
-	OutputType string `yaml:"output_type,omitempty"`
+	Comment                string `yaml:"comment,omitempty"`
+	File                   string `yaml:"file"`
+	Line                   int    `yaml:"line"`
+	InputType              string `yaml:"input_type,omitempty"`
+	OutputType             string `yaml:"output_type,omitempty"`
+	ReturnsWellFormedError bool   `yaml:"formed_error,omitempty"`
 }
 
 // YAMLType represents a type in YAML format.
@@ -144,11 +145,12 @@ func GenerateYAML(docs []*ServiceDoc, sourceFiles []string) ([]byte, error) {
 		// Add methods
 		for _, m := range doc.Methods {
 			service.Methods[m.Name] = Method{
-				Comment:    m.Comment,
-				File:       m.File,
-				Line:       m.Line,
-				InputType:  m.InputType,
-				OutputType: m.OutputType,
+				Comment:                m.Comment,
+				File:                   m.File,
+				Line:                   m.Line,
+				InputType:              m.InputType,
+				OutputType:             m.OutputType,
+				ReturnsWellFormedError: m.ReturnsWellFormedError,
 			}
 		}
 
@@ -183,5 +185,5 @@ package ` + pkgName + `
 
 const DocYAML = ` + "`" + string(content) + "`\n"
 
-return []byte(ret)
+	return []byte(ret)
 }

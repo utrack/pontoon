@@ -23,18 +23,20 @@ services:
         line: 9
       ServiceOptions:
         file: /home/u/github/utrack/pontoon/test/h1.go
-        line: 110
+        line: 115
         output_type: '[]github.com/utrack/pontoon/sdesc.ServiceOption'
       ifaceReturn:
         file: /home/u/github/utrack/pontoon/test/h1.go
         line: 82
         input_type: github.com/utrack/pontoon/test.iterateRequest
         output_type: interface{}
+        formed_error: true
       ifaceReturnAny:
         file: /home/u/github/utrack/pontoon/test/h1.go
         line: 86
         input_type: github.com/utrack/pontoon/test.iterateRequest
         output_type: any
+        formed_error: true
       iterateProducts:
         comment: |
           IterateProducts comment
@@ -43,35 +45,45 @@ services:
         line: 74
         input_type: github.com/utrack/pontoon/test.iterateRequest
         output_type: github.com/utrack/pontoon/test2.IterateResponse
+        formed_error: true
       jsonWithDirs:
         file: /home/u/github/utrack/pontoon/test/h1.go
-        line: 106
+        line: 111
         input_type: github.com/utrack/pontoon/test.jsonWithDirectives
-        output_type: error
+        formed_error: true
       mapReturn:
         file: /home/u/github/utrack/pontoon/test/h1.go
-        line: 102
+        line: 107
         input_type: github.com/utrack/pontoon/test.iterateRequest
         output_type: map[string]github.com/utrack/pontoon/test2.IterateResponse
+        formed_error: true
       nonAnnotIn:
         file: /home/u/github/utrack/pontoon/test/h1.go
         line: 78
         input_type: github.com/utrack/pontoon/test.nonAnnotJSON
         output_type: interface{}
+        formed_error: true
+      rawHandler:
+        comment: |
+          This is a "raw" handler that cannot be annotated.
+        file: /home/u/github/utrack/pontoon/test/h1.go
+        line: 95
       sliceInObjReturn:
         file: /home/u/github/utrack/pontoon/test/h1.go
-        line: 98
+        line: 103
         output_type: github.com/utrack/pontoon/test.jsonWithArrayOfStructs
+        formed_error: true
       sliceReturn:
         file: /home/u/github/utrack/pontoon/test/h1.go
-        line: 94
+        line: 99
         input_type: github.com/utrack/pontoon/test.iterateRequest
         output_type: '[]github.com/utrack/pontoon/test2.IterateResponse'
+        formed_error: true
       zeroReturn:
         file: /home/u/github/utrack/pontoon/test/h1.go
         line: 90
         input_type: github.com/utrack/pontoon/test.iterateRequest
-        output_type: error
+        formed_error: true
 types:
   github.com/utrack/pontoon/sdesc.ServiceOption:
     package: github.com/utrack/pontoon/sdesc

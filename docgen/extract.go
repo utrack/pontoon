@@ -126,27 +126,59 @@ func (e *Extractor) ExtractService(t *types.Named) (*ServiceDoc, error) {
 		}
 
 		// Extract input/output types
-		var inputType, outputType string
-		if sig.Params().Len() >= 2 {
-			inputType = typeString(sig.Params().At(1).Type())
-			if err := e.extractType(doc.Types, sig.Params().At(1).Type()); err != nil {
+		var inputTypeName, outputTypeName string
+		var returnsWellFormedError bool
+
+		var inputType types.Type
+		// the handlers are variadic; params can be anything
+		// take the first non-http.Request param
+		for i := 0; i < sig.Params().Len(); i++ {
+			param := sig.Params().At(i)
+			if types.IsInterface(param.Type()) {
+				continue
+			}
+			if param.Type().String() == "*net/http.Request" {
+				continue
+			}
+			inputType = param.Type()
+			break
+		}
+		if inputType != nil {
+			inputTypeName = typeString(inputType)
+			err := e.extractType(doc.Types, inputType)
+			if err != nil {
 				return nil, errors.Wrapf(err, "extracting input type for method %s", method.Name())
 			}
 		}
+
 		if sig.Results().Len() > 0 {
-			outputType = typeString(sig.Results().At(0).Type())
-			if err := e.extractType(doc.Types, sig.Results().At(0).Type()); err != nil {
-				return nil, errors.Wrapf(err, "extracting output type for method %s", method.Name())
+			// if two results, assume second is error
+			if sig.Results().Len() == 2 {
+				returnsWellFormedError = true
+			}
+
+			outputTypeName = typeString(sig.Results().At(0).Type())
+
+			// handler can return just the error
+			if outputTypeName == "error" {
+				returnsWellFormedError = true
+				outputTypeName = ""
+			} else {
+
+				if err := e.extractType(doc.Types, sig.Results().At(0).Type()); err != nil {
+					return nil, errors.Wrapf(err, "extracting output type for method %s", method.Name())
+				}
 			}
 		}
 
 		doc.Methods = append(doc.Methods, MethodDoc{
-			Name:       method.Name(),
-			Comment:    methodDoc,
-			File:       methodPos.Filename,
-			Line:       methodPos.Line,
-			InputType:  inputType,
-			OutputType: outputType,
+			Name:                   method.Name(),
+			Comment:                methodDoc,
+			File:                   methodPos.Filename,
+			Line:                   methodPos.Line,
+			InputType:              inputTypeName,
+			OutputType:             outputTypeName,
+			ReturnsWellFormedError: returnsWellFormedError,
 		})
 	}
 
