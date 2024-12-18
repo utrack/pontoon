@@ -9,6 +9,7 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
 func (g *Generator) GenerateModel(t reflect.Type) (*base.SchemaProxy, []*v3.Parameter, error) {
@@ -67,7 +68,7 @@ func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 		}
 	}
 	for item := range sch.Properties.ValuesFromNewest() {
-		debugLog("-> next property")
+		debugLog("-> next field (property)")
 		if item.IsReference() {
 			debugLog(" --> isReference '%v'", item.GetReference())
 			err := w.pullOperationParameters(item)
@@ -78,7 +79,27 @@ func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 
 		ext := item.Schema().Extensions
 
+		putExtensions := orderedmap.New[string, *yaml.Node]()
+
+		if e, ok := sch.Extensions.Get("x-pontoon-go-package"); ok && e != nil {
+			putExtensions.Set("x-pontoon-go-package", &yaml.Node{
+				Kind:  e.Kind,
+				Tag:   e.Tag,
+				Value: e.Value,
+			})
+		}
+		if e, ok := sch.Extensions.Get("x-pontoon-go-type"); ok && e != nil {
+			putExtensions.Set("x-pontoon-go-type", &yaml.Node{
+				Kind:  e.Kind,
+				Tag:   e.Tag,
+				Value: e.Value,
+			})
+		}
+
 		if ext != nil {
+			if e, ok := ext.Get("x-pontoon-field-go-name"); ok {
+				putExtensions.Set("x-pontoon-field-go-name", e)
+			}
 			debugLog("-> has extensions,first: %s", ext.Newest().Key)
 			in := ext.GetOrZero("x-httpin-in")
 			if in != nil {
@@ -93,10 +114,19 @@ func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 
 				name := ext.GetOrZero(fmt.Sprintf("x-httpin-%v", in.Value))
 
+				for k, v := range ext.FromNewest() {
+					putExtensions.Set(k, &yaml.Node{
+						Kind:  v.Kind,
+						Tag:   v.Tag,
+						Value: v.Value,
+					})
+				}
+
 				w.parameters = append(w.parameters, &v3.Parameter{
-					Name:   name.Value,
-					In:     in.Value,
-					Schema: item,
+					Name:       name.Value,
+					In:         in.Value,
+					Schema:     item,
+					Extensions: putExtensions,
 				})
 				continue
 			}

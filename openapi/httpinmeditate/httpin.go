@@ -8,6 +8,7 @@ import (
 // fieldInfo contains parsed httpin field information
 type fieldInfo struct {
 	Name string
+	OriginalName string
 	Type reflect.Type
 	In   string
 	Tags map[string]string
@@ -17,6 +18,7 @@ type fieldInfo struct {
 func parseField(field reflect.StructField, isInBody bool) (*fieldInfo, error) {
 	info := &fieldInfo{
 		Name: field.Name,
+		OriginalName: field.Name,
 		Type: field.Type,
 		Tags: make(map[string]string),
 	}

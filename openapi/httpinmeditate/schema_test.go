@@ -491,7 +491,7 @@ type ParamModel struct {
 	Query   string `httpin:"query=q"`
 	Header  string `httpin:"header=x-custom"`
 	Cookie  string `httpin:"cookie=session"`
-	User User    `httpin:"body=json"`
+	User    User   `httpin:"body=json"`
 	Nested  ParamModelNested
 	Ignored string
 }
@@ -501,7 +501,7 @@ type ParamModelNested struct {
 	Field2 string `httpin:"query=field2"`
 }
 
-func TestGenerator_GenerateModel(t *testing.T) {
+func TestGenerator_GenerateOperationModel(t *testing.T) {
 	g := NewGenerator()
 
 	schema, params, err := g.GenerateModel(reflect.TypeOf(ParamModel{}))
@@ -527,10 +527,20 @@ func TestGenerator_GenerateModel(t *testing.T) {
 
 	// Verify each parameter
 	for _, p := range params {
+
 		switch p.Name {
 		case "id":
 			assert.Equal(t, "path", p.In)
 			assert.Equal(t, []string{"integer"}, p.Schema.Schema().Type)
+			annot, ok := p.Extensions.Get("x-pontoon-field-go-name")
+			assert.True(t, ok)
+			assert.NotNil(t, annot)
+			annot, ok = p.Extensions.Get("x-pontoon-go-package")
+			require.True(t, ok)
+			require.NotNil(t, annot)
+			annot, ok = p.Extensions.Get("x-pontoon-go-type")
+			require.True(t, ok)
+			require.NotNil(t, annot)
 		case "q":
 			assert.Equal(t, "query", p.In)
 			assert.Equal(t, []string{"string"}, p.Schema.Schema().Type)

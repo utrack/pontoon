@@ -125,6 +125,18 @@ func (g *Generator) generateStructSchema(t reflect.Type, isJSON bool) (*base.Sch
 		return nil, errors.Errorf("type must be a struct, got %v", t.Kind())
 	}
 
+	extensions := orderedmap.New[string, *yaml.Node]()
+	extensions.Set("x-pontoon-go-package", &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Tag:   "!!str",
+		Value: t.PkgPath(),
+	})
+	extensions.Set("x-pontoon-go-type", &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Tag:   "!!str",
+		Value: t.Name(),
+	})
+
 	debugLog("genStructSchema for '%v'", t.String())
 
 	// Handle embedded fields first - we'll merge them via allOf
@@ -179,10 +191,15 @@ func (g *Generator) generateStructSchema(t reflect.Type, isJSON bool) (*base.Sch
 		propMap.Set(field.Name, fieldSchema)
 	}
 
+	ref := ""
+	if len(embeddedSchemas) == 0 {
+		ref = fmt.Sprintf("#/components/schemas/%s", g.SchemaNameFunc(t))
+	}
 	regularSchema := base.CreateSchemaProxy(&base.Schema{
-		SchemaTypeRef: fmt.Sprintf("#/components/schemas/%s", g.SchemaNameFunc(t)),
+		SchemaTypeRef: ref,
 		Type:          []string{"object"},
 		Properties:    propMap,
+		Extensions:    extensions,
 	})
 
 	// If we have embedded fields, use allOf
@@ -213,6 +230,13 @@ func (g *Generator) generateFieldSchema(field *fieldInfo) (*base.SchemaProxy, er
 			Value: field.In,
 		})
 	}
+	// a marker for the docmerge
+	extensions.Set("x-pontoon-field-go-name", &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Tag:   "!!str",
+		Value: field.OriginalName,
+	})
+
 	for tagType, tagValue := range field.Tags {
 		extensions.Set(fmt.Sprintf("x-httpin-%s", tagType), &yaml.Node{
 			Kind:  yaml.ScalarNode,
