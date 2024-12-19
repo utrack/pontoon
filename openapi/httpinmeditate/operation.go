@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
@@ -81,24 +82,13 @@ func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 
 		putExtensions := orderedmap.New[string, *yaml.Node]()
 
-		if e, ok := sch.Extensions.Get("x-pontoon-go-package"); ok && e != nil {
-			putExtensions.Set("x-pontoon-go-package", &yaml.Node{
-				Kind:  e.Kind,
-				Tag:   e.Tag,
-				Value: e.Value,
-			})
-		}
-		if e, ok := sch.Extensions.Get("x-pontoon-go-type"); ok && e != nil {
-			putExtensions.Set("x-pontoon-go-type", &yaml.Node{
-				Kind:  e.Kind,
-				Tag:   e.Tag,
-				Value: e.Value,
-			})
-		}
+		schGoType,_ := oext.GetGoTypeInfo(sch.Extensions)
+
+		schGoType.SetTo(putExtensions)
 
 		if ext != nil {
-			if e, ok := ext.Get("x-pontoon-field-go-name"); ok {
-				putExtensions.Set("x-pontoon-field-go-name", e)
+			if e, ok := ext.Get(oext.ExtGoFieldName); ok {
+				putExtensions.Set(oext.ExtGoFieldName, e)
 			}
 			debugLog("-> has extensions,first: %s", ext.Newest().Key)
 			in := ext.GetOrZero("x-httpin-in")

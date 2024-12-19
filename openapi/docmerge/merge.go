@@ -1,10 +1,14 @@
 package docmerge
 
 import (
+	"fmt"
+
 	"github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
-	"github.com/ryboe/q"
+	"github.com/pb33f/libopenapi/orderedmap"
+	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/docgen"
+	ext "github.com/utrack/pontoon/openapi/pontoonext"
 )
 
 // mergeOptions configures the merge behavior
@@ -53,6 +57,7 @@ func (e *ErrMergeConflict) Error() string {
 	return "merge conflict at " + e.Path
 }
 
+
 // Merge merges the documentation into the OpenAPI schema
 func Merge(inDef *v3.Document, docs *docgen.YAMLDoc, opts ...Option) (*v3.Document, error) {
 	options := &mergeOptions{}
@@ -93,68 +98,109 @@ func Merge(inDef *v3.Document, docs *docgen.YAMLDoc, opts ...Option) (*v3.Docume
 
 // mergeYAMLDocs merges documentation from YAML into OpenAPI document
 func mergeYAMLDocs(doc *v3.Document, docs *docgen.YAMLDoc, opts *mergeOptions) error {
-	if doc.Components == nil || doc.Components.Schemas == nil {
+
+	if doc.Components != nil && doc.Components.Schemas != nil {
+		err := mergeDocComponents(doc.Components.Schemas, docs, opts)
+		if err != nil {
+			return errors.Wrap(err, "when merging Components.Schemas")
+		}
+	}
+
+	// TODO merge services and handlers
+
+	return nil
+}
+
+// mergeDocComponents merges documentation from YAML into OpenAPI `Components.Schemas`.
+func mergeDocComponents(schemas *orderedmap.Map[string, *base.SchemaProxy], docs *docgen.YAMLDoc, opts *mergeOptions) error {
+	for schemaName, schemaReadOnly := range schemas.FromNewest() {
+
+		schema := schemaReadOnly.Schema()
+		err := mergeSchemaDoc(schema, docs, opts)
+		if err != nil {
+			return errors.Wrapf(err, "when merging schema '%v'", schemaName)
+		}
+
+		schemas.Set(schemaName, base.CreateSchemaProxy(schema))
+	}
+	return nil
+}
+
+// mergeCompositeSchemas processes all schemas in a composite type (allOf/anyOf/oneOf)
+func mergeCompositeSchemas(schemas []*base.SchemaProxy, docs *docgen.YAMLDoc, opts *mergeOptions) error {
+	for i, partReadOnly := range schemas {
+		if partReadOnly == nil {
+			continue
+		}
+		schema := partReadOnly.Schema()
+		if err := mergeSchemaDoc(schema, docs, opts); err != nil {
+			return fmt.Errorf("failed to merge schema at index %d: %w", i, err)
+		}
+		schemas[i] = base.CreateSchemaProxy(schema)
+	}
+	return nil
+}
+
+func mergeSchemaDoc(schema *base.Schema, docs *docgen.YAMLDoc, opts *mergeOptions) error {
+	if schema.Extensions == nil {
 		return nil
 	}
 
-	// Iterate over all schemas in OpenAPI doc
-	for schemaName, schemaReadOnly := range doc.Components.Schemas.FromNewest() {
+	// Get Go type information
+	goTypeInfo, ok := ext.GetGoTypeInfo(schema.Extensions)
+	if !ok {
+		return nil
+	}
 
-		typSchema := schemaReadOnly.Schema()
+	if err := mergeCompositeSchemas(schema.AllOf, docs, opts); err != nil {
+		return errors.Wrapf(err, "when merging AllOf for Go type '%v'", goTypeInfo.String())
+	}
 
-		if typSchema.Extensions == nil {
+	if err := mergeCompositeSchemas(schema.AnyOf, docs, opts); err != nil {
+		return errors.Wrapf(err, "when merging AnyOf for Go type '%v'", goTypeInfo.String())
+	}
+
+	if err := mergeCompositeSchemas(schema.OneOf, docs, opts); err != nil {
+		return errors.Wrapf(err, "when merging OneOf for Go type '%v'", goTypeInfo.String())
+	}
+
+	typeDoc := findType(docs, goTypeInfo.PackagePath, goTypeInfo.TypeName)
+	if typeDoc != nil {
+		if typeDoc.Comment != "" && (!opts.preserveExisting || schema.Description == "") {
+			schema.Description = typeDoc.Comment
+		}
+	}
+
+	// Add field documentation
+	if schema.Properties == nil {
+		return nil
+	}
+	for key, fieldSchemaReadOnly := range schema.Properties.FromNewest() {
+		fieldSchema := fieldSchemaReadOnly.Schema()
+
+		if fieldSchema.Extensions == nil {
 			continue
 		}
 
-		// Get Go type information
-		pkgPath, ok := typSchema.Extensions.Get("x-pontoon-go-package")
+		// Get field name
+		fieldName, ok := ext.GetGoFieldName(fieldSchema.Extensions)
 		if !ok {
 			continue
 		}
-		typeName, ok := typSchema.Extensions.Get("x-pontoon-go-type")
-		if !ok {
-			continue
-		}
 
-		typeDoc := findType(docs, pkgPath.Value, typeName.Value)
-		if typeDoc != nil {
-			if typeDoc.Comment != "" && (!opts.preserveExisting || typSchema.Description == "") {
-				typSchema.Description = typeDoc.Comment
-			}
+		// Find field documentation
+		field := findField(typeDoc, fieldName)
+		if field == nil {
+			continue
 		}
 
 		// Add field documentation
-		if typSchema.Properties != nil {
-			for key, fieldSchemaReadOnly := range typSchema.Properties.FromNewest() {
-				fieldSchema := fieldSchemaReadOnly.Schema()
-
-				if fieldSchema.Extensions == nil {
-					continue
-				}
-
-				// Get field name
-				fieldName, ok := fieldSchema.Extensions.Get("x-pontoon-field-go-name")
-				if !ok {
-					continue
-				}
-
-				// Find field documentation
-				field := findField(typeDoc, fieldName.Value)
-				if field == nil {
-					continue
-				}
-
-				// Add field documentation
-				if field.Comment != "" && (!opts.preserveExisting || fieldSchema.Description == "") {
-					fieldSchema.Description = field.Comment
-				}
-				typSchema.Properties.Set(key, base.CreateSchemaProxy(fieldSchema))
-			}
+		if field.Comment != "" && (!opts.preserveExisting || fieldSchema.Description == "") {
+			fieldSchema.Description = field.Comment
 		}
-		doc.Components.Schemas.Set(schemaName, base.CreateSchemaProxy(typSchema))
+		schema.Properties.Set(key, base.CreateSchemaProxy(fieldSchema))
 	}
 
-	q.Q("schemas after", doc.Components.Schemas)
 	return nil
 }
 

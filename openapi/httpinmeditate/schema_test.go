@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
@@ -532,15 +533,13 @@ func TestGenerator_GenerateOperationModel(t *testing.T) {
 		case "id":
 			assert.Equal(t, "path", p.In)
 			assert.Equal(t, []string{"integer"}, p.Schema.Schema().Type)
-			annot, ok := p.Extensions.Get("x-pontoon-field-go-name")
+			annot, ok := p.Extensions.Get(oext.ExtGoFieldName)
 			assert.True(t, ok)
 			assert.NotNil(t, annot)
-			annot, ok = p.Extensions.Get("x-pontoon-go-package")
+			
+			goType, ok := oext.GetGoTypeInfo(p.Extensions)
 			require.True(t, ok)
-			require.NotNil(t, annot)
-			annot, ok = p.Extensions.Get("x-pontoon-go-type")
-			require.True(t, ok)
-			require.NotNil(t, annot)
+			require.NotEmpty(t, goType)
 		case "q":
 			assert.Equal(t, "query", p.In)
 			assert.Equal(t, []string{"string"}, p.Schema.Schema().Type)

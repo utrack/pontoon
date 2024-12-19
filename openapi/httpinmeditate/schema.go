@@ -7,6 +7,7 @@ import (
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
+	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	"gopkg.in/yaml.v3"
 
 	"github.com/pkg/errors"
@@ -126,16 +127,11 @@ func (g *Generator) generateStructSchema(t reflect.Type, isJSON bool) (*base.Sch
 	}
 
 	extensions := orderedmap.New[string, *yaml.Node]()
-	extensions.Set("x-pontoon-go-package", &yaml.Node{
-		Kind:  yaml.ScalarNode,
-		Tag:   "!!str",
-		Value: t.PkgPath(),
-	})
-	extensions.Set("x-pontoon-go-type", &yaml.Node{
-		Kind:  yaml.ScalarNode,
-		Tag:   "!!str",
-		Value: t.Name(),
-	})
+	goType := oext.GoTypeInfo{
+		PackagePath: t.PkgPath(),
+		TypeName:    t.Name(),
+	}
+	goType.SetTo(extensions)
 
 	debugLog("genStructSchema for '%v'", t.String())
 
@@ -231,7 +227,7 @@ func (g *Generator) generateFieldSchema(field *fieldInfo) (*base.SchemaProxy, er
 		})
 	}
 	// a marker for the docmerge
-	extensions.Set("x-pontoon-field-go-name", &yaml.Node{
+	extensions.Set(oext.ExtGoFieldName, &yaml.Node{
 		Kind:  yaml.ScalarNode,
 		Tag:   "!!str",
 		Value: field.OriginalName,
