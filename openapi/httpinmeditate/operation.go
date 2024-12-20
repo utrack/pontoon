@@ -139,12 +139,17 @@ func (w *walker) pullStructProperties(structGoType *oext.GoTypeInfo, props *orde
 					})
 				}
 
-				w.parameters = append(w.parameters, &v3.Parameter{
+				param := &v3.Parameter{
 					Name:       name.Value,
 					In:         in.Value,
 					Schema:     item,
 					Extensions: putExtensions,
-				})
+				}
+				if in.Value == "path" {
+					t := true
+					param.Required = &t
+				}
+				w.parameters = append(w.parameters, param)
 				continue
 			}
 		}
