@@ -27,6 +27,7 @@ const (
 )
 
 func (g GoTypeInfo) SetTo(extensions *orderedmap.Map[string, *yaml.Node]) {
+
 	if g.PackagePath != "" {
 		extensions.Set(ExtGoPackage, &yaml.Node{
 			Kind:  yaml.ScalarNode,

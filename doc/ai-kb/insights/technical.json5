@@ -1,0 +1,145 @@
+{
+  // Knowledge Base Entry for Technical Insights and Learnings
+  architecture: {
+    key_insights: [
+      {
+        topic: "Feature Composition",
+        insight: "Features build on each other incrementally",
+        example: "Feature 003 uses Feature 001's httpinmeditate for schema generation"
+      },
+      {
+        topic: "Package Organization",
+        insight: "Core functionality in openapi/ directory",
+        components: [
+          "httpinmeditate - schema generation",
+          "docmerge - documentation handling"
+        ]
+      }
+    ]
+  },
+  openapi: {
+    generation: {
+      insight: "Two-phase OpenAPI generation",
+      phases: [
+        {
+          name: "Schema Generation",
+          component: "httpinmeditate.Generator",
+          purpose: "Convert Go types to OpenAPI schemas"
+        },
+        {
+          name: "Documentation Merge",
+          component: "docmerge.Merge",
+          purpose: "Preserve and merge documentation"
+        }
+      ]
+    },
+    type_handling: {
+      insight: "Runtime type information used for better schemas",
+      example: "Feature 001 provides runtime type info via httpinmeditate"
+    },
+    libopenapi: {
+      insights: [
+        {
+          topic: "OrderedMap Usage",
+          insight: "libopenapi uses orderedmap.Map for collections",
+          examples: [
+            "doc.Paths.PathItems is orderedmap.Map[string, *v3.PathItem]",
+            "response.Content is orderedmap.Map[string, *v3.MediaType]"
+          ],
+          operations: [
+            "Use Get/Set instead of map syntax",
+            "Check exists flag from Get"
+          ]
+        },
+        {
+          topic: "Document Structure",
+          insight: "OpenAPI version is in Version field, not OpenAPI",
+          example: "doc.Version = '3.1.0'"
+        }
+      ]
+    },
+    httpinmeditate: {
+      insights: [
+        {
+          topic: "Input Tags",
+          insight: "Uses 'in' tag instead of 'httpin'",
+          examples: [
+            "`in:\"query=str\"` for query parameters",
+            "`in:\"body=json\"` for JSON body"
+          ]
+        },
+        {
+          topic: "Request Parsing",
+          insight: "Does not parse request as JSON automatically",
+          solution: "Must explicitly specify body=json in tag"
+        },
+        {
+          topic: "Schema Generation",
+          insight: "Use JSONSchemaRef for request/response bodies",
+          example: "oapigen.JSONSchemaRef(type) for proper references",
+          requirements: [
+            "All request/response bodies must be references to Components",
+            "References must use #/components/schemas/ prefix",
+            "No inline schemas allowed in request/response bodies"
+          ]
+        },
+        {
+          topic: "Embedded Types",
+          insight: "Embedded structs are handled via allOf",
+          examples: [
+            "type ComplexRequest struct { QueryParams; RequestBody }",
+            "type ComplexResponse struct { Status string; Data ResponseData }"
+          ],
+          requirements: [
+            "Embedded types must be registered in Components first",
+            "References to embedded types must use #/components/schemas/ prefix",
+            "Embedded types are merged via allOf in the parent schema"
+          ],
+          notes: [
+            "Anonymous structs are not supported yet",
+            "Map types use additionalProperties instead of references for scalar values"
+          ]
+        }
+      ]
+    }
+  },
+  testing: {
+    patterns: [
+      {
+        pattern: "Test with real structs",
+        example: "ParamModel in schema_test.go",
+        reason: "Catches real-world type handling issues"
+      },
+      {
+        pattern: "Test full generation flow",
+        reason: "Integration between components is critical"
+      }
+    ],
+    notes: [
+      "Cannot compare functions in Go tests",
+      "Use NotNil for handler existence check",
+      "Use IsReference() and GetReference() for schema references",
+      "Check additionalProperties for map types"
+    ]
+  },
+  go_testing: {
+    insights: [
+      {
+        topic: "Function Comparison",
+        insight: "Cannot directly compare functions in Go using require.Equal",
+        fix: "Use require.NotNil for function existence check",
+        example: "require.NotNil(t, h.handler) // instead of require.Equal(t, tc.handler, h.handler)",
+        reason: "Functions are not comparable in Go"
+      }
+    ]
+  },
+  dependencies: {
+    insights: [
+      {
+        package: "github.com/pb33f/libopenapi",
+        purpose: "OpenAPI 3.1 model and utilities",
+        usage: "Base types for OpenAPI document construction"
+      }
+    ]
+  }
+}

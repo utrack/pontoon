@@ -183,7 +183,15 @@ func GenerateGoFile(pkgName string, content []byte) []byte {
 
 package ` + pkgName + `
 
-const DocYAML = ` + "`" + string(content) + "`\n"
+import (
+	"github.com/utrack/pontoon/docgen/docregistry"
+)
+
+func init() {
+	docregistry.MustRegister(docYAML)
+}
+
+const docYAML = ` + "`" + string(content) + "`\n"
 
 	return []byte(ret)
 }

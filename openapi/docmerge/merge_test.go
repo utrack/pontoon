@@ -9,8 +9,8 @@ import (
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/stretchr/testify/require"
 	"github.com/utrack/pontoon/docgen"
+	ext "github.com/utrack/pontoon/openapi/pontoonext"
 	"gopkg.in/yaml.v3"
-ext "github.com/utrack/pontoon/openapi/pontoonext"
 )
 
 func TestMerge(t *testing.T) {
@@ -278,7 +278,7 @@ func TestMerge(t *testing.T) {
 							Description: "CompositeUser represents a user with multiple roles",
 							AllOf: []*base.SchemaProxy{
 								base.CreateSchemaProxy(&base.Schema{
-									Description: "BaseUser contains common user fields",
+									Description:   "BaseUser contains common user fields",
 									SchemaTypeRef: "#/components/schemas/github.com/example/pkg.BaseUser",
 									Extensions: func() *orderedmap.Map[string, *yaml.Node] {
 										e := orderedmap.New[string, *yaml.Node]()
@@ -371,7 +371,7 @@ func TestMerge(t *testing.T) {
 							Description: "RecursiveType represents a type that references itself",
 							AllOf: []*base.SchemaProxy{
 								base.CreateSchemaProxy(&base.Schema{
-									Description: "RecursiveType represents a type that references itself",
+									Description:   "RecursiveType represents a type that references itself",
 									SchemaTypeRef: "#/components/schemas/github.com/example/pkg.RecursiveType",
 									Extensions: func() *orderedmap.Map[string, *yaml.Node] {
 										e := orderedmap.New[string, *yaml.Node]()
@@ -404,7 +404,7 @@ func TestMerge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Merge(tt.runtime, tt.docs, tt.opts...)
+			got, err := Merge(tt.runtime, append([]Option{WithDocFile(tt.docs)}, tt.opts...)...)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -416,7 +416,6 @@ func TestMerge(t *testing.T) {
 			gotBytes, err := yaml.Marshal(gotYaml)
 			require.NoError(t, err)
 			fmt.Println(string(gotBytes))
-
 
 			wantYaml, err := tt.want.MarshalYAML()
 			require.NoError(t, err)

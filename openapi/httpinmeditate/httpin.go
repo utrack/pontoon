@@ -7,20 +7,20 @@ import (
 
 // fieldInfo contains parsed httpin field information
 type fieldInfo struct {
-	Name string
+	Name         string
 	OriginalName string
-	Type reflect.Type
-	In   string
-	Tags map[string]string
+	Type         reflect.Type
+	In           string
+	Tags         map[string]string
 }
 
 // parseField extracts httpin-related information from a struct field
 func parseField(field reflect.StructField, isInBody bool) (*fieldInfo, error) {
 	info := &fieldInfo{
-		Name: field.Name,
+		Name:         field.Name,
 		OriginalName: field.Name,
-		Type: field.Type,
-		Tags: make(map[string]string),
+		Type:         field.Type,
+		Tags:         make(map[string]string),
 	}
 
 	if isInBody {
@@ -42,7 +42,7 @@ func parseField(field reflect.StructField, isInBody bool) (*fieldInfo, error) {
 		return info, nil
 	}
 
-	tag := field.Tag.Get("httpin")
+	tag := field.Tag.Get("in")
 	if tag == "" {
 		return info, nil // not a httpin field
 	}

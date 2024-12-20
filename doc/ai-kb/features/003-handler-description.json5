@@ -1,0 +1,104 @@
+{
+  // Knowledge Base Entry for Handler Description Feature
+  feature: {
+    id: "003",
+    name: "Handler Description",
+    status: "implementation_in_progress",
+    implementation_status: {
+      phase1_complete: {
+        status: "done",
+        files: [
+          {
+            path: "httpinoapi/options.go",
+            purpose: "Handler registration options",
+            implemented: [
+              "WithTags",
+              "WithInputStruct",
+              "WithOutputStruct",
+              "WithDescription"
+            ]
+          },
+          {
+            path: "httpinoapi/register.go",
+            purpose: "Core Generator implementation",
+            implemented: [
+              "Generator struct",
+              "Operation method",
+              "Input validation",
+              "Handler storage"
+            ]
+          },
+          {
+            path: "httpinoapi/register_test.go",
+            purpose: "Core Generator tests",
+            coverage: [
+              "Operation registration",
+              "Input validation",
+              "Duplicate detection"
+            ]
+          }
+        ]
+      },
+      phase2_in_progress: {
+        status: "in_progress",
+        files: [
+          {
+            path: "httpinoapi/merge.go",
+            purpose: "OpenAPI generation",
+            implemented: [
+              "buildOperation method",
+              "Build method",
+              "httpinmeditate integration",
+              "docmerge integration"
+            ],
+            pending: [
+              "Fix libopenapi usage",
+              "Test full integration"
+            ]
+          },
+          {
+            path: "httpinoapi/merge_test.go",
+            purpose: "OpenAPI generation tests",
+            implemented: [
+              "Basic document structure",
+              "Path registration",
+              "Operation verification"
+            ],
+            pending: [
+              "Run and fix tests",
+              "Add more test cases"
+            ]
+          }
+        ]
+      },
+      next_steps: [
+        "Fix libopenapi usage in merge.go",
+        "Complete and run merge_test.go",
+        "Add more test cases",
+        "Move to Phase 3 (Testing)"
+      ]
+    }
+  },
+  technical_notes: {
+    libopenapi: {
+      issues_found: [
+        {
+          issue: "OrderedMap instead of regular maps",
+          fix: "Use Get/Set methods instead of map syntax",
+          example: "doc.Paths.PathItems.Get(path)"
+        },
+        {
+          issue: "Version field naming",
+          fix: "Use Version instead of OpenAPI field",
+          example: "doc.Version = '3.1.0'"
+        }
+      ]
+    },
+    testing: {
+      notes: [
+        "Cannot compare functions in Go tests",
+        "Use NotNil for handler existence check"
+      ]
+    }
+  }
+}

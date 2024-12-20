@@ -1,0 +1,78 @@
+{
+  openapi: {
+    request_handling: {
+      insights: [
+        {
+          topic: "Request Body Structure",
+          insight: "Use a dedicated struct for JSON body to avoid tag conflicts",
+          example: `
+            type CreatePetRequest struct {
+              Pet CreatePetRequestPet 'in:"body=json"'
+            }
+            type CreatePetRequestPet struct {
+              Name string 'json:"name"'
+            }
+          `,
+          reasons: [
+            "Separates routing/binding concerns from data structure",
+            "Avoids conflicts between 'in' and 'json' tags",
+            "Makes schema generation cleaner"
+          ]
+        },
+        {
+          topic: "Mixed Parameter Types",
+          insight: "Combine path, query, and body parameters in a single struct",
+          example: `
+            type UpdatePetRequest struct {
+              ID  int64 'in:"path=id"'
+              Pet UpdatePetBody 'in:"body=json"'
+            }
+          `,
+          benefits: [
+            "Single point of request validation",
+            "Clear parameter documentation",
+            "Type-safe request handling"
+          ]
+        }
+      ]
+    },
+    schema_generation: {
+      insights: [
+        {
+          topic: "Schema References",
+          insight: "All complex types must be referenced from Components",
+          rules: [
+            "Use SchemaTypeRef for component registration",
+            "Convert inline schemas to references",
+            "Handle nested references recursively"
+          ]
+        },
+        {
+          topic: "Map Types",
+          insight: "Map types use additionalProperties instead of references for scalar values",
+          example: "map[string]string -> additionalProperties: {type: string}"
+        },
+        {
+          topic: "Package Names",
+          insight: "Replace slashes in package paths for schema names",
+          example: "github.com/org/repo/pkg -> github.com_org_repo_pkg",
+          reason: "Avoids invalid characters in schema references"
+        }
+      ]
+    },
+    documentation: {
+      insights: [
+        {
+          topic: "UI Integration",
+          insight: "Use Stoplight Elements for OpenAPI UI",
+          example: "Serve /openapi.yaml and /docs endpoints",
+          benefits: [
+            "Interactive API documentation",
+            "Built-in request/response examples",
+            "No additional dependencies"
+          ]
+        }
+      ]
+    }
+  }
+}

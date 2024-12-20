@@ -8,6 +8,7 @@ import (
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/docgen"
+	"github.com/utrack/pontoon/docgen/docregistry"
 	ext "github.com/utrack/pontoon/openapi/pontoonext"
 )
 
@@ -15,6 +16,7 @@ import (
 type mergeOptions struct {
 	preserveExisting bool // preserve existing documentation in the OpenAPI Document
 	strictValidation bool // error out on any potential issue during merge
+	docFile          *docgen.YAMLDoc
 }
 
 // Option is a functional option for merge configuration
@@ -33,6 +35,14 @@ func WithPreserveExisting(preserve bool) Option {
 func WithStrictValidation(strict bool) Option {
 	return func(o *mergeOptions) {
 		o.strictValidation = strict
+	}
+}
+
+// WithDocFile uses a given docfile instead of the global registry.
+// Useful for testing internals, not much else.
+func WithDocFile(f *docgen.YAMLDoc) Option {
+	return func(o *mergeOptions) {
+		o.docFile = f
 	}
 }
 
@@ -57,9 +67,8 @@ func (e *ErrMergeConflict) Error() string {
 	return "merge conflict at " + e.Path
 }
 
-
 // Merge merges the documentation into the OpenAPI schema
-func Merge(inDef *v3.Document, docs *docgen.YAMLDoc, opts ...Option) (*v3.Document, error) {
+func Merge(inDef *v3.Document, opts ...Option) (*v3.Document, error) {
 	options := &mergeOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -68,8 +77,8 @@ func Merge(inDef *v3.Document, docs *docgen.YAMLDoc, opts ...Option) (*v3.Docume
 	if inDef == nil {
 		return nil, &ErrValidation{Field: "oapi-definition", Message: "runtime document is nil"}
 	}
-	if docs == nil {
-		return nil, &ErrValidation{Field: "docs", Message: "documentation is nil"}
+	if options.docFile == nil {
+		options.docFile = docregistry.GlobalFile()
 	}
 
 	// Create a copy of the runtime document to avoid modifying the original
@@ -78,7 +87,7 @@ func Merge(inDef *v3.Document, docs *docgen.YAMLDoc, opts ...Option) (*v3.Docume
 	mergedDoc := inDef
 
 	// Merge documentation from YAML
-	if err := mergeYAMLDocs(mergedDoc, docs, options); err != nil {
+	if err := mergeYAMLDocs(mergedDoc, options.docFile, options); err != nil {
 		return nil, err
 	}
 
@@ -172,7 +181,7 @@ func mergeSchemaDoc(schema *base.Schema, docs *docgen.YAMLDoc, opts *mergeOption
 	}
 
 	// Add field documentation
-	if schema.Properties == nil {
+	if schema.Properties == nil || schema.Properties.Len() == 0 {
 		return nil
 	}
 	for key, fieldSchemaReadOnly := range schema.Properties.FromNewest() {
@@ -206,6 +215,9 @@ func mergeSchemaDoc(schema *base.Schema, docs *docgen.YAMLDoc, opts *mergeOption
 
 // findField finds a field in a service by its Go name
 func findField(t *docgen.YAMLType, fieldName string) *docgen.YAMLField {
+	if t == nil {
+		return nil
+	}
 	for _, field := range t.Fields {
 		if field.Name == fieldName {
 			return &field
@@ -216,6 +228,9 @@ func findField(t *docgen.YAMLType, fieldName string) *docgen.YAMLField {
 
 // findType finds a type in docs by its Go type name
 func findType(docs *docgen.YAMLDoc, pkgPath, typeName string) *docgen.YAMLType {
+	if docs == nil {
+		return nil
+	}
 	for _, t := range docs.Types {
 		if t.Package == pkgPath && t.Name == typeName {
 			return &t

@@ -1,0 +1,163 @@
+{
+  // Knowledge Base Entry for Pontoon Project
+  project: {
+    name: "Pontoon",
+    purpose: "OpenAPI 3.1 generation and documentation framework for Go",
+    repository: "github.com/utrack/pontoon",
+    key_features: [
+      {
+        id: "001",
+        name: "Runtime Inspection",
+        status: "done",
+        purpose: "Improve documentation generation by combining compile-time and runtime information"
+      },
+      {
+        id: "002",
+        name: "Total Description",
+        status: "pending",
+        purpose: "Generate complete OpenAPI 3.1 documentation from Go code"
+      },
+      {
+        id: "003",
+        name: "Handler Description",
+        status: "implementation",
+        purpose: "Runtime interface for OpenAPI handler description generation"
+      }
+    ]
+  },
+  architecture: {
+    core_packages: [
+      {
+        name: "openapi/httpinmeditate",
+        purpose: "OpenAPI schema generation with runtime type information",
+        key_components: [
+          {
+            name: "Generator",
+            purpose: "Generate OpenAPI schemas from Go types"
+          }
+        ]
+      },
+      {
+        name: "openapi/docmerge",
+        purpose: "Documentation preservation and merging",
+        key_components: [
+          {
+            name: "Merge",
+            purpose: "Merge OpenAPI documents while preserving documentation"
+          }
+        ]
+      },
+      {
+        name: "httpinoapi",
+        purpose: "Handler registration and OpenAPI generation",
+        status: "in_development",
+        key_components: [
+          {
+            name: "Generator",
+            purpose: "Register handlers and generate OpenAPI specs"
+          }
+        ]
+      }
+    ],
+    dependencies: [
+      {
+        name: "libopenapi",
+        package: "github.com/pb33f/libopenapi",
+        purpose: "OpenAPI 3.1 data model and utilities"
+      }
+    ]
+  },
+  workflow: {
+    documentation: {
+      locations: {
+        features: "/doc/features/",
+        rfcs: "/doc/rfc/",
+        kanban: "/doc/kanban-board.md",
+        workflows: "/doc/workflow/",
+        knowledge_base: "/doc/ai-kb/"
+      },
+      formats: {
+        features: "markdown",
+        rfcs: "markdown",
+        workflows: "json5",
+        knowledge_base: "json5"
+      }
+    },
+    development_process: {
+      steps: [
+        {
+          name: "Feature Description",
+          file: "/doc/workflow/by-type/00-feature-description.json5",
+          purpose: "Define feature requirements and scope"
+        },
+        {
+          name: "RFC",
+          file: "/doc/workflow/by-type/01-rfc.json5",
+          purpose: "Technical design and implementation plan"
+        },
+        {
+          name: "Implementation",
+          file: "/doc/workflow/by-type/02-implementation.json5",
+          purpose: "Code implementation and testing"
+        }
+      ],
+      critical_rules: [
+        "Fail fast and discuss issues in chat",
+        "Do not destroy working code",
+        "Follow workflow descriptions",
+        "Maintain documentation in proper format",
+        "Persist knowledge in AI KB"
+      ]
+    }
+  },
+  coding_standards: {
+    documentation: {
+      rules: [
+        "Use Markdown for features and RFCs",
+        "Use JSON5 for workflows and KB",
+        "Keep documentation up to date",
+        "Link related documents"
+      ]
+    },
+    code: {
+      rules: [
+        "Write thread-safe code unless explicitly noted",
+        "Include comprehensive tests",
+        "Document public APIs",
+        "Handle errors explicitly"
+      ]
+    },
+    git: {
+      rules: [
+        "Keep commits focused and atomic",
+        "Write descriptive commit messages",
+        "Link to issues and documents"
+      ]
+    }
+  },
+  testing: {
+    types: [
+      {
+        name: "Unit Tests",
+        location: "*_test.go",
+        framework: "testing"
+      },
+      {
+        name: "Integration Tests",
+        location: "*_test.go",
+        framework: "testing"
+      },
+      {
+        name: "Example Tests",
+        location: "example_*_test.go",
+        framework: "testing"
+      }
+    ],
+    requirements: [
+      "Test all public APIs",
+      "Include example tests",
+      "Test error cases",
+      "Test concurrency if applicable"
+    ]
+  }
+}

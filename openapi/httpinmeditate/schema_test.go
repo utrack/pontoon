@@ -20,19 +20,19 @@ func init() {
 }
 
 type Address struct {
-	Street string `httpin:"form=street"`
-	City   string `httpin:"form=city"`
+	Street string `in:"form=street"`
+	City   string `in:"form=city"`
 }
 
 type User struct {
 	Address                     // embedded struct
-	ID        int64             `httpin:"path=id"`
-	Name      *string           `httpin:"form=name"`
-	Age       int               `httpin:"query=age"`
-	Tags      []string          `httpin:"form=tags"`
-	Metadata  map[string]string `httpin:"json=metadata"`
-	CreatedAt time.Time         `httpin:"header=created-at"`
-	UpdatedAt *time.Time        `httpin:"header=updated-at"`
+	ID        int64             `in:"path=id"`
+	Name      *string           `in:"form=name"`
+	Age       int               `in:"query=age"`
+	Tags      []string          `in:"form=tags"`
+	Metadata  map[string]string `in:"json=metadata"`
+	CreatedAt time.Time         `in:"header=created-at"`
+	UpdatedAt *time.Time        `in:"header=updated-at"`
 	private   string            // should be ignored
 }
 
@@ -51,72 +51,72 @@ func (m MarshalableType) MarshalText() ([]byte, error) {
 var _ encoding.TextMarshaler = (*MarshalableType)(nil)
 
 type Node struct {
-	Value    string `httpin:"form=value"`
-	Parent   *Node  `httpin:"form=parent"`
-	Children []Node `httpin:"form=children"`
+	Value    string `in:"form=value"`
+	Parent   *Node  `in:"form=parent"`
+	Children []Node `in:"form=children"`
 }
 
 type BaseA struct {
-	FieldA string `httpin:"form=field_a"`
+	FieldA string `in:"form=field_a"`
 }
 
 type BaseB struct {
-	FieldB string `httpin:"form=field_b"`
+	FieldB string `in:"form=field_b"`
 }
 
 type MultiEmbed struct {
 	BaseA
 	*BaseB
-	FieldC string `httpin:"form=field_c"`
+	FieldC string `in:"form=field_c"`
 }
 
 type ComplexTypes_SlicePtr struct {
-	NestedPtrSlice []*BaseA `httpin:"form=nested_ptr_slice"`
+	NestedPtrSlice []*BaseA `in:"form=nested_ptr_slice"`
 }
 
 type ComplexTypes_StructMap struct {
-	StructMap map[string]BaseA `httpin:"form=struct_map"`
+	StructMap map[string]BaseA `in:"form=struct_map"`
 }
 
 type ComplexTypes struct {
-	String string  `httpin:"form=string"`
-	Int    int     `httpin:"form=int"`
-	Float  float64 `httpin:"form=float"`
-	Bool   bool    `httpin:"form=bool"`
-	Bytes  []byte  `httpin:"form=bytes"`
+	String string  `in:"form=string"`
+	Int    int     `in:"form=int"`
+	Float  float64 `in:"form=float"`
+	Bool   bool    `in:"form=bool"`
+	Bytes  []byte  `in:"form=bytes"`
 
-	CustomStr  CustomString    `httpin:"form=custom_str"`
-	CustomInt  CustomInt       `httpin:"form=custom_int"`
-	CustomTime CustomTime      `httpin:"form=custom_time"`
-	Marshaler  MarshalableType `httpin:"form=marshaler"`
+	CustomStr  CustomString    `in:"form=custom_str"`
+	CustomInt  CustomInt       `in:"form=custom_int"`
+	CustomTime CustomTime      `in:"form=custom_time"`
+	Marshaler  MarshalableType `in:"form=marshaler"`
 
-	StringPtr *string  `httpin:"form=string_ptr"`
-	IntPtr    *int     `httpin:"form=int_ptr"`
-	FloatPtr  *float64 `httpin:"form=float_ptr"`
-	BoolPtr   *bool    `httpin:"form=bool_ptr"`
+	StringPtr *string  `in:"form=string_ptr"`
+	IntPtr    *int     `in:"form=int_ptr"`
+	FloatPtr  *float64 `in:"form=float_ptr"`
+	BoolPtr   *bool    `in:"form=bool_ptr"`
 
-	StringArray  [3]string `httpin:"form=string_array"`
-	IntSlice     []int     `httpin:"form=int_slice"`
-	Float64Slice []float64 `httpin:"form=float_slice"`
+	StringArray  [3]string `in:"form=string_array"`
+	IntSlice     []int     `in:"form=int_slice"`
+	Float64Slice []float64 `in:"form=float_slice"`
 
-	StringMap map[string]string `httpin:"form=string_map"`
-	IntMap    map[string]int    `httpin:"form=int_map"`
-	StructMap map[string]BaseA  `httpin:"form=struct_map"`
+	StringMap map[string]string `in:"form=string_map"`
+	IntMap    map[string]int    `in:"form=int_map"`
+	StructMap map[string]BaseA  `in:"form=struct_map"`
 
-	Nested         BaseA    `httpin:"form=nested"`
-	NestedPtr      *BaseA   `httpin:"form=nested_ptr"`
-	NestedSlice    []BaseA  `httpin:"form=nested_slice"`
-	NestedPtrSlice []*BaseA `httpin:"form=nested_ptr_slice"`
+	Nested         BaseA    `in:"form=nested"`
+	NestedPtr      *BaseA   `in:"form=nested_ptr"`
+	NestedSlice    []BaseA  `in:"form=nested_slice"`
+	NestedPtrSlice []*BaseA `in:"form=nested_ptr_slice"`
 
-	Time         time.Time    `httpin:"form=time"`
-	TimePtr      *time.Time   `httpin:"form=time_ptr"`
-	TimeSlice    []time.Time  `httpin:"form=time_slice"`
-	TimePtrSlice []*time.Time `httpin:"form=time_ptr_slice"`
+	Time         time.Time    `in:"form=time"`
+	TimePtr      *time.Time   `in:"form=time_ptr"`
+	TimeSlice    []time.Time  `in:"form=time_slice"`
+	TimePtrSlice []*time.Time `in:"form=time_ptr_slice"`
 
-	EmptyStruct struct{} `httpin:"form=empty_struct"`
+	EmptyStruct struct{} `in:"form=empty_struct"`
 	// AnonStruct  struct {
-	// 	Field string `httpin:"form=field"`
-	// } `httpin:"form=anon_struct"`
+	// 	Field string `in:"form=field"`
+	// } `in:"form=anon_struct"`
 }
 
 func TestGenerator_GenerateSchema(t *testing.T) {
@@ -199,7 +199,7 @@ func TestGenerator_GenerateSchema_Errors(t *testing.T) {
 		{
 			name: "struct with interface field",
 			typ: reflect.TypeOf(struct {
-				Field interface{} `httpin:"form=field"`
+				Field interface{} `in:"form=field"`
 			}{}),
 			wantErr:  true,
 			errMatch: "type interface {} not supported",
@@ -207,7 +207,7 @@ func TestGenerator_GenerateSchema_Errors(t *testing.T) {
 		{
 			name: "map with non-string key",
 			typ: reflect.TypeOf(struct {
-				Field map[int]string `httpin:"form=field"`
+				Field map[int]string `in:"form=field"`
 			}{}),
 			wantErr:  true,
 			errMatch: "map key must be string",
@@ -402,12 +402,12 @@ func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
 
 func TestGenerator_GenerateSchema_HttpinTags(t *testing.T) {
 	type TestStruct struct {
-		FormField   string            `httpin:"form=form_field"`
-		QueryField  *string           `httpin:"query=query_field"`
-		HeaderField []int             `httpin:"header=header-field"`
-		CookieField bool              `httpin:"cookie=cookie_field"`
-		PathField   int64             `httpin:"path=path_field"`
-		JSONField   map[string]string `httpin:"json=json_field"`
+		FormField   string            `in:"form=form_field"`
+		QueryField  *string           `in:"query=query_field"`
+		HeaderField []int             `in:"header=header-field"`
+		CookieField bool              `in:"cookie=cookie_field"`
+		PathField   int64             `in:"path=path_field"`
+		JSONField   map[string]string `in:"json=json_field"`
 	}
 
 	g := NewGenerator()
@@ -450,7 +450,7 @@ func TestGenerator_GenerateSchema_HttpinTags(t *testing.T) {
 }
 
 type StructWithJSON struct {
-	FieldJSON StructWithJSONField `httpin:"body=json"`
+	FieldJSON StructWithJSONField `in:"body=json"`
 }
 
 type StructWithJSONField struct {
@@ -488,24 +488,24 @@ func TestGenerator_GenerateSchema_JSONTags(t *testing.T) {
 }
 
 type ParamModel struct {
-	ID      int    `httpin:"path=id"`
-	Query   string `httpin:"query=q"`
-	Header  string `httpin:"header=x-custom"`
-	Cookie  string `httpin:"cookie=session"`
-	User    User   `httpin:"body=json"`
+	ID      int    `in:"path=id"`
+	Query   string `in:"query=q"`
+	Header  string `in:"header=x-custom"`
+	Cookie  string `in:"cookie=session"`
+	User    User   `in:"body=json"`
 	Nested  ParamModelNested
 	Ignored string
 }
 
 type ParamModelNested struct {
-	Field1 string `httpin:"path=field1"`
-	Field2 string `httpin:"query=field2"`
+	Field1 string `in:"path=field1"`
+	Field2 string `in:"query=field2"`
 }
 
 func TestGenerator_GenerateOperationModel(t *testing.T) {
 	g := NewGenerator()
 
-	schema, params, err := g.GenerateModel(reflect.TypeOf(ParamModel{}))
+	schema, params, err := g.GenerateOperationRequestParams(reflect.TypeOf(ParamModel{}))
 	require.NoError(t, err)
 	require.NotNil(t, schema)
 

@@ -3,6 +3,7 @@ package httpinmeditate
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
@@ -34,7 +35,7 @@ func defaultSchemaName(t reflect.Type) string {
 	if t.PkgPath() == "" {
 		return t.Name()
 	}
-	return fmt.Sprintf("%s.%s", t.PkgPath(), t.Name())
+	return strings.ReplaceAll(fmt.Sprintf("%s.%s", t.PkgPath(), t.Name()), "/", "_")
 }
 
 type options struct {
@@ -59,6 +60,14 @@ func withInsideBody(yes bool) Option {
 	return func(o *options) {
 		o.insideBody = yes
 	}
+}
+
+func (g *Generator) JSONSchemaRef(t reflect.Type) (*base.SchemaProxy, error) {
+	return g.generateSchema(t, withRootAsReference(true), withInsideBody(true))
+}
+
+func (g *Generator) SchemaRef(t reflect.Type) (*base.SchemaProxy, error) {
+	return g.generateSchema(t, withRootAsReference(false))
 }
 
 // GenerateSchema generates an OpenAPI 3.1 Component Schema for the given type
@@ -107,6 +116,10 @@ func (g *Generator) generateSchema(t reflect.Type, oo ...Option) (*base.SchemaPr
 
 	// Store reference
 	g.refs[t] = schema
+
+	if opts.insideBody && !schema.IsReference() && schema.Schema().SchemaTypeRef != "" {
+		return base.CreateSchemaProxyRef(schema.Schema().SchemaTypeRef), nil
+	}
 	return schema, nil
 }
 
@@ -152,17 +165,10 @@ func (g *Generator) generateStructSchema(t reflect.Type, isJSON bool) (*base.Sch
 			if err != nil {
 				return nil, errors.Wrapf(err, "when generating schema for embedded field '%v' of type '%v'", field.Name, field.Type)
 			}
-
-			var embeddedSchema *base.SchemaProxy
-			switch {
-			case schema.IsReference():
-				embeddedSchema = base.CreateSchemaProxyRef(schema.GetReference())
-			case schema.Schema() != nil && schema.Schema().SchemaTypeRef != "":
-				embeddedSchema = base.CreateSchemaProxyRef(schema.Schema().SchemaTypeRef)
-			default:
-				embeddedSchema = schema
+			if !schema.IsReference() && schema.Schema().SchemaTypeRef != "" {
+				schema = base.CreateSchemaProxyRef(schema.Schema().SchemaTypeRef)
 			}
-			embeddedSchemas = append(embeddedSchemas, embeddedSchema)
+			embeddedSchemas = append(embeddedSchemas, schema)
 			continue
 		}
 

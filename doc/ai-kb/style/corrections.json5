@@ -1,0 +1,56 @@
+{
+  // Knowledge Base Entry for User Corrections and Style Preferences
+  code_style: {
+    naming: {
+      packages: [
+        {
+          correction: "httpinoapi instead of handlergen",
+          reason: "More descriptive of the package's purpose",
+          example: "Package httpinoapi provides OpenAPI generation from HTTP handlers"
+        }
+      ],
+      methods: [
+        {
+          correction: "GenerateOperationRequestParams instead of GenerateModel",
+          reason: "More specific about the purpose",
+          file: "openapi/httpinmeditate/operation.go"
+        }
+      ]
+    },
+    structure: {
+      package_layout: [
+        {
+          correction: "Flat package structure preferred",
+          example: "merge.go moved from internal/ to package root",
+          context: "httpinoapi package structure"
+        }
+      ]
+    }
+  },
+  api_design: {
+    preferences: [
+      {
+        pattern: "Use Generator pattern for initialization-time operations",
+        example: "httpinoapi.Generator for handler registration"
+      },
+      {
+        pattern: "Explicit input/output types",
+        example: "WithInputStruct, WithOutputStruct options"
+      }
+    ]
+  },
+  documentation: {
+    rfc: {
+      structure: [
+        {
+          section: "Implementation Details",
+          preference: "Include actual code examples with full type signatures"
+        },
+        {
+          section: "Integration Flow",
+          preference: "Show complete flow with error handling"
+        }
+      ]
+    }
+  }
+}

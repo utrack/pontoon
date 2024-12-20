@@ -227,7 +227,7 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 			}
 		}
 		if f == nil {
-			fmt.Println("f is nil - ret, looking for '", t.Obj().Pkg().Path(), " - ", t.Obj().Name(), " cur is ", e.pkg.PkgPath)
+			fmt.Println("WARN f is nil - ret, looking for '", t.Obj().Pkg().Path(), " - ", t.Obj().Name(), " current is ", e.pkg.PkgPath)
 			// Type is from another package, skip detailed extraction
 			typeDocs[typeName] = TypeDoc{
 				Name:    t.Obj().Name(),

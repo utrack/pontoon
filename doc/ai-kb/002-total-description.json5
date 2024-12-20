@@ -1,0 +1,117 @@
+{
+  // Total Description feature documentation
+  feature: {
+    name: 'Total Description',
+    status: 'in_progress',
+    dependencies: [
+      {
+        name: 'libopenapi',
+        version: 'v0.18.7',
+        usage: 'OpenAPI schema handling',
+      },
+      {
+        name: 'docgen',
+        package: 'github.com/utrack/pontoon/docgen',
+        usage: 'Documentation YAML generation',
+      },
+    ],
+  },
+
+  implementation: {
+    core_components: {
+      docmerge: {
+        status: 'partial',
+        completed: {
+          basic_merge: true,
+          composite_types: true,
+          recursive_handling: true,
+        },
+        pending: {
+          service_docs: true,
+          doc_versioning: true,
+          quality_metrics: true,
+        },
+      },
+      
+      pontoonext: {
+        status: 'complete',
+        features: [
+          'go_type_info',
+          'extension_constants',
+          'field_name_handling',
+        ],
+      },
+    },
+
+    test_coverage: {
+      basic_cases: [
+        'type_documentation',
+        'field_documentation',
+        'doc_preservation',
+      ],
+      complex_cases: [
+        'composite_types',
+        'recursive_schemas',
+        'doc_conflicts',
+      ],
+    },
+
+    technical_decisions: {
+      extension_management: [
+        {
+          moved_to_pontoonext: 'Better reusability and centralization',
+        },
+        {
+          go_type_info_struct: 'Type-safe handling of Go type information',
+        },
+        {
+          standardized_keys: 'Prevent typos and inconsistencies',
+        },
+      ],
+      
+      schema_composition: [
+        {
+          uniform_handling: 'Consistent processing of AllOf/AnyOf/OneOf',
+        },
+        {
+          recursive_safety: 'Prevent infinite loops in recursive schemas',
+        },
+        {
+          structure_preservation: 'Maintain original schema structure',
+        },
+      ],
+    },
+
+    known_issues: [
+      {
+        description: 'New feature dependency discovered',
+        status: 'blocking',
+        next_steps: [
+          'document_requirement',
+          'update_implementation_plan',
+          'wait_for_dependency',
+        ],
+      },
+    ],
+  },
+
+  code_patterns: {
+    extension_keys: [
+      'x-pontoon-go-package',
+      'x-pontoon-go-type',
+      'x-pontoon-field-go-name',
+    ],
+
+    schema_composition: [
+      {
+        allOf: 'Type embedding and inheritance',
+      },
+      {
+        anyOf: 'Optional type variants',
+      },
+      {
+        oneOf: 'Exclusive type variants',
+      },
+    ],
+  },
+}

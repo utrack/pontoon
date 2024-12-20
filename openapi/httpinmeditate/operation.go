@@ -5,15 +5,15 @@ import (
 	"reflect"
 	"strings"
 
-	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
+	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	"gopkg.in/yaml.v3"
 )
 
-func (g *Generator) GenerateModel(t reflect.Type) (*base.SchemaProxy, []*v3.Parameter, error) {
+func (g *Generator) GenerateOperationRequestParams(t reflect.Type) (*base.SchemaProxy, []*v3.Parameter, error) {
 	schema, err := g.generateSchema(t)
 	if err != nil {
 		return nil, nil, err
@@ -38,6 +38,9 @@ type walker struct {
 }
 
 func (w *walker) getByRef(ref string) (*base.SchemaProxy, bool) {
+	for k := range w.refs.KeysFromNewest() {
+		fmt.Println("have ref ", k)
+	}
 	ref = strings.TrimPrefix(ref, "#/components/schemas/")
 	var ok bool
 	in, ok := w.refs.Get(ref)
@@ -47,29 +50,55 @@ func (w *walker) getByRef(ref string) (*base.SchemaProxy, bool) {
 func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 	if in.IsReference() {
 		var ok bool
-		in, ok = w.refs.Get(in.GetReference())
+		ref := in.GetReference()
+		in, ok = w.getByRef(ref)
 		if !ok {
-			return errors.Errorf("reference '%v' not resolved", in.GetReference())
+			return errors.Errorf("reference '%v' not resolved", ref)
 		}
 	}
 	sch := in.Schema()
 	if sch == nil {
 		return errors.New("no schema")
 	}
+
+	for _, item := range sch.AllOf {
+		debugLog("-> next allOf")
+		if err := w.pullOperationParameters(item); err != nil {
+			return errors.Wrap(err, "when walking allOf")
+		}
+	}
 	for _, item := range sch.AnyOf {
 		debugLog("-> next anyOf")
 		if err := w.pullOperationParameters(item); err != nil {
-			return err
+			return errors.Wrap(err, "when walking anyOf")
 		}
 	}
 	for _, item := range sch.OneOf {
 		debugLog("-> next oneOf")
 		if err := w.pullOperationParameters(item); err != nil {
-			return err
+			return errors.Wrap(err, "when walking oneOf")
 		}
 	}
-	for item := range sch.Properties.ValuesFromNewest() {
+
+	structGoType, _ := oext.GetGoTypeInfo(sch.Extensions)
+	if err := w.pullStructProperties(structGoType, sch.Properties); err != nil {
+		return errors.Wrap(err, "when walking through the struct's OpenAPI properties")
+	}
+	return nil
+}
+
+func (w *walker) pullStructProperties(structGoType *oext.GoTypeInfo, props *orderedmap.Map[string, *base.SchemaProxy]) error {
+
+	if props == nil {
+		return nil
+	}
+	if structGoType == nil {
+		return errors.New("structGoType was not embedded into the schema")
+	}
+
+	for item := range props.ValuesFromNewest() {
 		debugLog("-> next field (property)")
+
 		if item.IsReference() {
 			debugLog(" --> isReference '%v'", item.GetReference())
 			err := w.pullOperationParameters(item)
@@ -82,9 +111,7 @@ func (w *walker) pullOperationParameters(in *base.SchemaProxy) error {
 
 		putExtensions := orderedmap.New[string, *yaml.Node]()
 
-		schGoType,_ := oext.GetGoTypeInfo(sch.Extensions)
-
-		schGoType.SetTo(putExtensions)
+		structGoType.SetTo(putExtensions)
 
 		if ext != nil {
 			if e, ok := ext.Get(oext.ExtGoFieldName); ok {
