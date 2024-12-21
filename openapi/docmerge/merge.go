@@ -231,10 +231,9 @@ func findType(docs *docgen.YAMLDoc, pkgPath, typeName string) *docgen.YAMLType {
 	if docs == nil {
 		return nil
 	}
-	for _, t := range docs.Types {
-		if t.PkgPath == pkgPath && t.Name == typeName {
-			return &t
-		}
+	v,ok := docs.Types[pkgPath+"."+typeName]
+	if !ok {
+		return nil
 	}
-	return nil
+	return &v
 }

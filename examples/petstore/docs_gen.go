@@ -12,7 +12,7 @@ func init() {
 
 const docYAML = `checksum: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 types:
-  Category:
+  github.com/utrack/pontoon/examples/petstore.Category:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: Category
@@ -32,7 +32,7 @@ types:
           Name is the category name; non-unique.
         tags: json:"name"
     is_struct: true
-  CreatePetRequest:
+  github.com/utrack/pontoon/examples/petstore.CreatePetRequest:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: CreatePetRequest
@@ -47,7 +47,7 @@ types:
           Pet is the pet's details
         tags: in:"body=json"
     is_struct: true
-  CreatePetRequestPet:
+  github.com/utrack/pontoon/examples/petstore.CreatePetRequestPet:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: CreatePetRequestPet
@@ -81,7 +81,7 @@ types:
           docgen: enum
         tags: json:"status"
     is_struct: true
-  ErrorResponse:
+  github.com/utrack/pontoon/examples/petstore.ErrorResponse:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: ErrorResponse
@@ -100,7 +100,7 @@ types:
         type: string
         tags: json:"details,omitempty"
     is_struct: true
-  ListPetsRequest:
+  github.com/utrack/pontoon/examples/petstore.ListPetsRequest:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: ListPetsRequest
@@ -129,7 +129,7 @@ types:
         is_array:
           type: string
     is_struct: true
-  ListPetsResponse:
+  github.com/utrack/pontoon/examples/petstore.ListPetsResponse:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: ListPetsResponse
@@ -153,7 +153,7 @@ types:
         type: int
         tags: json:"per_page"
     is_struct: true
-  Pet:
+  github.com/utrack/pontoon/examples/petstore.Pet:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: Pet
@@ -186,21 +186,7 @@ types:
         type: time.Time
         tags: json:"updated_at"
     is_struct: true
-  Request:
-    id: ""
-    package: net/http
-    name: Request
-    file: /usr/lib/go/src/net/http/request.go
-    line: 112
-    is_struct: false
-  ResponseWriter:
-    id: ""
-    package: net/http
-    name: ResponseWriter
-    file: /usr/lib/go/src/net/http/server.go
-    line: 96
-    is_struct: false
-  Status:
+  github.com/utrack/pontoon/examples/petstore.Status:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: Status
@@ -209,7 +195,7 @@ types:
     comment: |
       Status represents a pet's status in the store
     is_struct: false
-  Store:
+  github.com/utrack/pontoon/examples/petstore.Store:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: Store
@@ -248,7 +234,7 @@ types:
         inputs: []
         outputs: []
     is_struct: true
-  Tag:
+  github.com/utrack/pontoon/examples/petstore.Tag:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: Tag
@@ -264,14 +250,7 @@ types:
         type: string
         tags: json:"name"
     is_struct: true
-  Time:
-    id: ""
-    package: time
-    name: Time
-    file: /usr/lib/go/src/time/time.go
-    line: 139
-    is_struct: false
-  UpdatePetRequest:
+  github.com/utrack/pontoon/examples/petstore.UpdatePetRequest:
     id: ""
     package: github.com/utrack/pontoon/examples/petstore
     name: UpdatePetRequest
@@ -289,4 +268,25 @@ types:
           Pet is the new model of this pet.
         tags: in:"body=json"
     is_struct: true
+  net/http.Request:
+    id: ""
+    package: net/http
+    name: Request
+    file: /usr/lib/go/src/net/http/request.go
+    line: 112
+    is_struct: false
+  net/http.ResponseWriter:
+    id: ""
+    package: net/http
+    name: ResponseWriter
+    file: /usr/lib/go/src/net/http/server.go
+    line: 96
+    is_struct: false
+  time.Time:
+    id: ""
+    package: time
+    name: Time
+    file: /usr/lib/go/src/time/time.go
+    line: 139
+    is_struct: false
 `

@@ -80,14 +80,12 @@ func TestGenerator_Build(t *testing.T) {
 	// Register a GET endpoint
 	err := g.Operation(http.MethodGet, "/users/:id", handler,
 		WithTags("users"),
-		WithDescription("Get user by ID"),
 		WithOutputStruct(TestResponse{}))
 	require.NoError(t, err)
 
 	// Register a POST endpoint
 	err = g.Operation(http.MethodPost, "/users", handler,
 		WithTags("users"),
-		WithDescription("Create user"),
 		WithInputStruct(TestRequest{}),
 		WithOutputStruct(TestResponse{}))
 	require.NoError(t, err)
@@ -112,7 +110,6 @@ func TestGenerator_Build(t *testing.T) {
 	// Verify GET operation
 	require.NotNil(t, getPath.Get)
 	require.Equal(t, []string{"users"}, getPath.Get.Tags)
-	require.Equal(t, "Get user by ID", getPath.Get.Description)
 	require.NotNil(t, getPath.Get.Responses, "GET Responses is nil")
 	require.NotNil(t, getPath.Get.Responses.Codes, "GET Responses.Codes is nil")
 	resp, exists := getPath.Get.Responses.Codes.Get("200")
@@ -126,7 +123,6 @@ func TestGenerator_Build(t *testing.T) {
 	// Verify POST operation
 	require.NotNil(t, postPath.Post)
 	require.Equal(t, []string{"users"}, postPath.Post.Tags)
-	require.Equal(t, "Create user", postPath.Post.Description)
 	require.NotNil(t, postPath.Post.RequestBody)
 	require.NotNil(t, postPath.Post.Responses, "POST Responses is nil")
 	require.NotNil(t, postPath.Post.Responses.Codes, "POST Responses.Codes is nil")
@@ -188,12 +184,10 @@ func TestGenerator_Build_ComplexTypes(t *testing.T) {
 
 	// Register endpoints with complex types
 	err := g.Operation(http.MethodGet, "/items", handler,
-		WithDescription("List items with complex response"),
 		WithOutputStruct(ComplexResponse{}))
 	require.NoError(t, err)
 
 	err = g.Operation(http.MethodPost, "/items", handler,
-		WithDescription("Create item with complex request"),
 		WithInputStruct(ComplexRequest{}),
 		WithOutputStruct(ComplexResponse{}))
 	require.NoError(t, err)
@@ -237,7 +231,6 @@ func TestGenerator_Build_ErrorResponses(t *testing.T) {
 
 	// Register endpoint with error response
 	err := g.Operation(http.MethodPost, "/items", handler,
-		WithDescription("Create item with error handling"),
 		WithInputStruct(TestRequest{}),
 		WithOutputStruct(TestResponse{}))
 	require.NoError(t, err)
@@ -277,8 +270,7 @@ func TestGenerator_Build_EdgeCases(t *testing.T) {
 	// require.NoError(t, err)
 
 	// Test nil input/output
-	err := g.Operation(http.MethodGet, "/nil", handler,
-		WithDescription("Nil input/output"))
+	err := g.Operation(http.MethodGet, "/nil", handler)
 	require.NoError(t, err)
 
 	// Test duplicate type registration

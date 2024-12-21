@@ -16,8 +16,7 @@ import (
 // buildOperation creates an OpenAPI operation from a handler.
 func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 	op := &v3.Operation{
-		Tags:        h.options.tags,
-		Description: h.options.description,
+		Tags: h.options.tags,
 	}
 
 	oapigen := httpinmeditate.NewGenerator()

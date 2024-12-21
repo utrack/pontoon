@@ -26,7 +26,6 @@ func TestGenerator_Operation(t *testing.T) {
 			handler: handler,
 			opts: []Option{
 				WithTags("users"),
-				WithDescription("Get user by ID"),
 			},
 			wantErr: false,
 		},

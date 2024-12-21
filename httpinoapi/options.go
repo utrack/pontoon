@@ -6,10 +6,9 @@ import "reflect"
 type Option func(*options)
 
 type options struct {
-	tags        []string
-	inputType   reflect.Type
-	outputType  reflect.Type
-	description string
+	tags       []string
+	inputType  reflect.Type
+	outputType reflect.Type
 }
 
 // WithTags adds OpenAPI tags to the handler
@@ -30,13 +29,6 @@ func WithInputStruct(inputStruct any) Option {
 func WithOutputStruct(outputStruct any) Option {
 	return func(o *options) {
 		o.outputType = reflect.TypeOf(outputStruct)
-	}
-}
-
-// WithDescription adds a description to the handler
-func WithDescription(desc string) Option {
-	return func(o *options) {
-		o.description = desc
 	}
 }
 

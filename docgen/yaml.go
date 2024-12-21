@@ -91,7 +91,7 @@ func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc) ([]byte, error) {
 		for _, method := range typeDoc.Methods {
 			t.Methods[method.Name] = yConvertMethod(method)
 		}
-		yamlDoc.Types[typeDoc.Name] = t
+		yamlDoc.Types[typeDoc.Package+"."+typeDoc.Name] = t
 	}
 
 	// Calculate checksum of source files
