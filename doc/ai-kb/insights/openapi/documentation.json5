@@ -1,0 +1,53 @@
+{
+  documentation: {
+    ui: {
+      insights: [
+        {
+          topic: "UI Integration",
+          insight: "Use Stoplight Elements for OpenAPI UI",
+          example: "Serve /openapi.yaml and /docs endpoints",
+          benefits: [
+            "Interactive API documentation",
+            "Built-in request/response examples",
+            "No additional dependencies"
+          ]
+        }
+      ]
+    },
+    endpoints: {
+      insights: [
+        {
+          topic: "OpenAPI Document",
+          insight: "Serve OpenAPI document as YAML",
+          implementation: [
+            "Render document with doc.Render()",
+            "Serve with application/yaml content type",
+            "Handle errors appropriately"
+          ]
+        },
+        {
+          topic: "Documentation UI",
+          insight: "Serve Stoplight Elements UI",
+          implementation: [
+            "Serve HTML with Elements script/styles",
+            "Configure Elements with apiDescriptionUrl",
+            "Use hash router for better navigation"
+          ]
+        }
+      ]
+    },
+    best_practices: {
+      insights: [
+        {
+          topic: "Document Organization",
+          insight: "Keep documentation endpoints consistent",
+          patterns: [
+            "/openapi.yaml for raw document",
+            "/docs for UI redirect",
+            "/docs/ for UI page"
+          ]
+        }
+      ]
+    }
+  }
+}

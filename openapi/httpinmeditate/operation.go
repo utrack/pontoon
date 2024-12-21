@@ -38,9 +38,6 @@ type walker struct {
 }
 
 func (w *walker) getByRef(ref string) (*base.SchemaProxy, bool) {
-	for k := range w.refs.KeysFromNewest() {
-		fmt.Println("have ref ", k)
-	}
 	ref = strings.TrimPrefix(ref, "#/components/schemas/")
 	var ok bool
 	in, ok := w.refs.Get(ref)

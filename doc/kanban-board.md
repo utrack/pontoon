@@ -1,6 +1,9 @@
 # Kanban Board
 
 ## Feature Design
+- [Docgen Anything](/doc/features/004-docgen-anything.md) - Generate documentation for any package with --all flag
+  - Dependencies: [Runtime Inspection](/doc/features/001-runtime-inspection.md)
+  - Required for: httpinoapi package documentation
 
 ## Implementation
 - [Handler Description](/doc/features/003-handler-description.md) - Runtime interface for OpenAPI handler description generation

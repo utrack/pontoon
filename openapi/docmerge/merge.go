@@ -232,7 +232,7 @@ func findType(docs *docgen.YAMLDoc, pkgPath, typeName string) *docgen.YAMLType {
 		return nil
 	}
 	for _, t := range docs.Types {
-		if t.Package == pkgPath && t.Name == typeName {
+		if t.PkgPath == pkgPath && t.Name == typeName {
 			return &t
 		}
 	}

@@ -16,6 +16,24 @@ import (
 
 const descPkgName = "github.com/utrack/pontoon/sdesc"
 
+var (
+	allFlag = flag.Bool("all", false, "Generate documentation for all types in package, not just Service implementations")
+)
+
+func buildPkgMap(m map[string]*packages.Package, p *packages.Package) {
+	if p == nil {
+		return
+	}
+	if _, ok := m[p.PkgPath]; ok {
+		return
+	}
+
+	m[p.PkgPath] = p
+	for _, imp := range p.Imports {
+		buildPkgMap(m, imp)
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -47,6 +65,12 @@ func main() {
 
 	// Process each package
 	var allFiles []string
+
+	allPkgs := make(map[string]*packages.Package)
+	for _, p := range pkgs {
+		buildPkgMap(allPkgs, p)
+	}
+
 	for _, p := range pkgs {
 		if len(p.Errors) > 0 {
 			log.Fatal("Errors when processing Go code: ", p.Errors)
@@ -57,48 +81,58 @@ func main() {
 		if len(p.CompiledGoFiles) == 0 {
 			continue
 		}
-		extractor := docgen.NewExtractor(p)
+		extractor := docgen.NewExtractor(p, allPkgs)
 
-		var pkgDocs []*docgen.ServiceDoc
+		var typesDocs []*docgen.TypeDoc
+
 		scope := p.Types.Scope()
+
 		for _, name := range scope.Names() {
 			obj := scope.Lookup(name)
-			// New() can return an unexported Handler
-			// if !obj.Exported() {
-			// 	continue
-			// }
 
-			// Check if type implements sdesc.Service
 			t, ok := obj.Type().(*types.Named)
-			if !ok || !types.Implements(t, descType) {
+			if !ok {
 				continue
 			}
 
-			fmt.Printf("%s:%d: found service %s\n",
+			var err error
+
+			if !*allFlag && !types.Implements(t, descType) {
+				continue
+			}
+
+			fmt.Printf("%s:%d: found type %s\n",
 				p.Fset.Position(obj.Pos()).Filename,
 				p.Fset.Position(obj.Pos()).Line,
 				obj.Type().String())
 
-			// Extract documentation
-			doc, err := extractor.ExtractService(t)
+			// Create a minimal ServiceDoc for the type
+
+			// Extract type documentation
+			extType, err := extractor.ExtractType(t)
 			if err != nil {
-				log.Fatalf("%s:%d: failed to extract service %s: %v",
+				fmt.Printf("Warning: %s:%d: failed to extract comments for %s: %v\n",
 					p.Fset.Position(obj.Pos()).Filename,
 					p.Fset.Position(obj.Pos()).Line,
 					obj.Type().String(),
 					err)
+				continue
 			}
 
-			pkgDocs = append(pkgDocs, doc)
+			for k := range extType {
+				v := extType[k]
+				typesDocs = append(typesDocs, &v)
+			}
+
 		}
 
 		// Generate a single Go file in the package directory
 		// with docs for everything referenced by it
-		if len(pkgDocs) > 0 {
+		if len(typesDocs) > 0 {
 			pkgDir := filepath.Dir(p.CompiledGoFiles[0])
 			outFile := filepath.Join(pkgDir, "docs_gen.go")
 
-			tomlData, err := docgen.GenerateYAML(pkgDocs, allFiles)
+			tomlData, err := docgen.GenerateYAML(allFiles, typesDocs)
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -18,7 +18,6 @@ type registry struct {
 func newRegistry() *registry {
 	return &registry{finalDoc: &docgen.YAMLDoc{
 		Checksum: "no-global-checksum",
-		Services: make(map[string]docgen.YAMLService),
 		Types:    make(map[string]docgen.YAMLType),
 	}}
 }
@@ -41,14 +40,6 @@ func (r *registry) registerYaml(yaml string) error {
 		return errors.Wrap(err, "when parsing YAML to YAMLDoc")
 	}
 
-	for k, v := range doc.Services {
-		if _, ok := r.finalDoc.Services[k]; ok {
-			// TODO deep compare and error when not equal
-			return errors.Errorf("service '%v' already registered", k)
-		}
-		r.finalDoc.Services[k] = v
-	}
-
 	for k, v := range doc.Types {
 		if _, ok := r.finalDoc.Types[k]; ok {
 			// TODO deep compare and error when not equal
@@ -69,11 +60,6 @@ func parseYaml(in []byte) (*docgen.YAMLDoc, error) {
 
 func ForType(name string) (docgen.YAMLType, bool) {
 	v, ok := global.finalDoc.Types[name]
-	return v, ok
-}
-
-func ForService(name string) (docgen.YAMLService, bool) {
-	v, ok := global.finalDoc.Services[name]
 	return v, ok
 }
 

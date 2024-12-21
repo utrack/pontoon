@@ -1,0 +1,70 @@
+{
+  schema_generation: {
+    component_handling: {
+      insights: [
+        {
+          topic: "Schema References",
+          insight: "All complex types must be referenced from Components",
+          rules: [
+            "Use SchemaTypeRef for component registration",
+            "Convert inline schemas to references",
+            "Handle nested references recursively"
+          ]
+        },
+        {
+          topic: "Package Names",
+          insight: "Replace slashes in package paths for schema names",
+          example: "github.com/org/repo/pkg -> github.com_org_repo_pkg",
+          reason: "Avoids invalid characters in schema references"
+        }
+      ]
+    },
+    type_handling: {
+      insights: [
+        {
+          topic: "Map Types",
+          insight: "Map types use additionalProperties instead of references for scalar values",
+          example: "map[string]string -> additionalProperties: {type: string}"
+        },
+        {
+          topic: "Embedded Types",
+          insight: "Embedded structs are handled via allOf",
+          example: `
+            type ComplexRequest struct {
+              QueryParams
+              RequestBody
+            }
+          `,
+          rules: [
+            "Register embedded type first",
+            "Create reference to embedded type",
+            "Use allOf to merge schemas"
+          ]
+        },
+        {
+          topic: "Time Types",
+          insight: "time.Time is converted to string with format: date-time",
+          example: "CreatedAt time.Time -> {type: string, format: date-time}"
+        }
+      ]
+    },
+    validation: {
+      insights: [
+        {
+          topic: "Document Validation",
+          insight: "OpenAPI document is validated after generation",
+          implementation: [
+            "Render document to YAML",
+            "Parse with libopenapi",
+            "Validate with libopenapi-validator"
+          ],
+          checks: [
+            "Schema correctness",
+            "Reference resolution",
+            "Required fields"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -41,26 +41,27 @@ type DocComment struct {
 	Identifier DocID  // Full identifier information
 }
 
-// ServiceDoc represents documentation for a service.
-type ServiceDoc struct {
-	Name     string
-	Package  string
-	File     string // Source file path
-	Line     int    // Line number in source
-	Comments []DocComment
-	Methods  []MethodDoc
-	Types    map[string]TypeDoc // All referenced types
-}
-
 // MethodDoc represents documentation for a service method.
 type MethodDoc struct {
-	Name       string
-	Comment    string
-	File       string
-	Line       int
-	InputType  string
-	OutputType string
+	FunctionDoc
+	InputType              string
+	OutputType             string
 	ReturnsWellFormedError bool
+}
+
+// FunctionDoc is some function's documentation.
+type FunctionDoc struct {
+	Name    string
+	Comment string
+	File    string
+	Line    int
+	Params  []FunctionParamDoc
+	Returns []FunctionParamDoc
+}
+
+type FunctionParamDoc struct {
+	Name string
+	Type string
 }
 
 // TypeDoc represents documentation for a type.
@@ -71,6 +72,7 @@ type TypeDoc struct {
 	Line     int
 	Comment  string
 	Fields   []FieldDoc
+	Methods  []FunctionDoc
 	IsStruct bool
 }
 

@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
-	oext "github.com/utrack/pontoon/openapi/pontoonext"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	oext "github.com/utrack/pontoon/openapi/pontoonext"
 )
 
 func init() {
-	debugEnabled = true
+	//debugEnabled = true
 }
 
 type Address struct {
@@ -136,7 +136,7 @@ func TestGenerator_GenerateSchema(t *testing.T) {
 
 	// Check Address schema
 	addrReference := doc.AllOf[0].GetReference()
-	assert.Equal(t, "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.Address", addrReference)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Address", addrReference)
 
 	// Check regular fields
 	regularSchema := doc.AllOf[1].Schema()
@@ -241,7 +241,7 @@ func TestGenerator_GenerateSchema_ComplexTypes_SlicePtr(t *testing.T) {
 	require.NotNil(t, props)
 
 	// Test basic types
-	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
+	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
 }
 
 func TestGenerator_GenerateSchema_ComplexTypes_StructMap(t *testing.T) {
@@ -257,7 +257,7 @@ func TestGenerator_GenerateSchema_ComplexTypes_StructMap(t *testing.T) {
 	props := doc.Properties
 	require.NotNil(t, props)
 
-	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
+	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
 }
 
 func TestGenerator_GenerateSchema_ComplexTypes(t *testing.T) {
@@ -300,13 +300,13 @@ func TestGenerator_GenerateSchema_ComplexTypes(t *testing.T) {
 	// Test maps
 	assertMapValueType(t, props, "string_map", "string")
 	assertMapValueType(t, props, "int_map", "integer")
-	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
+	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
 
 	// Test nested structs
-	assertRefType(t, props, "nested", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
-	assertNullableRefType(t, props, "nested_ptr", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
-	assertArrayRefType(t, props, "nested_slice", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
-	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA")
+	assertRefType(t, props, "nested", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertNullableRefType(t, props, "nested_ptr", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertArrayRefType(t, props, "nested_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
 
 	// Test time types
 	assertSchemaType(t, props, "time", "string", "date-time")
@@ -364,12 +364,12 @@ func TestGenerator_GenerateSchema_Recursive(t *testing.T) {
 	require.NotNil(t, parentSchema.OneOf)
 	require.Len(t, parentSchema.OneOf, 2)
 	assert.Equal(t, []string{"null"}, parentSchema.OneOf[0].Schema().Type)
-	assert.Equal(t, "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.Node", parentSchema.OneOf[1].Schema().SchemaTypeRef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", parentSchema.OneOf[1].Schema().SchemaTypeRef)
 
 	// Check Children field (recursive slice)
 	childrenSchema := props.GetOrZero("children").Schema()
 	assert.Equal(t, []string{"array"}, childrenSchema.Type)
-	assert.Equal(t, "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.Node", childrenSchema.Items.A.Schema().SchemaTypeRef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", childrenSchema.Items.A.Schema().SchemaTypeRef)
 }
 
 func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
@@ -386,13 +386,13 @@ func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
 
 	// Check BaseA fields
 	baseARef := doc.AllOf[0].GetReference()
-	assert.Equal(t, "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseA", baseARef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA", baseARef)
 
 	// Check BaseB fields (pointer)
 	baseBPtrSchema := doc.AllOf[1].Schema()
 	require.Len(t, baseBPtrSchema.OneOf, 2)
 	assert.Equal(t, []string{"null"}, baseBPtrSchema.OneOf[0].Schema().Type)
-	assert.Equal(t, "#/components/schemas/github.com/utrack/pontoon/openapi/httpinmeditate.BaseB", baseBPtrSchema.OneOf[1].GetReference())
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseB", baseBPtrSchema.OneOf[1].GetReference())
 
 	// Check own fields
 	ownSchema := doc.AllOf[2].Schema()
@@ -472,7 +472,7 @@ func TestGenerator_GenerateSchema_JSONTags(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "json", jsonField.Schema().Extensions.GetOrZero("x-httpin-body").Value)
 
-	ref := "github.com/utrack/pontoon/openapi/httpinmeditate.StructWithJSONField"
+	ref := "github.com_utrack_pontoon_openapi_httpinmeditate.StructWithJSONField"
 	refString := "#/components/schemas/" + ref
 
 	require.Equal(t, refString, jsonField.Schema().SchemaTypeRef)
@@ -536,7 +536,7 @@ func TestGenerator_GenerateOperationModel(t *testing.T) {
 			annot, ok := p.Extensions.Get(oext.ExtGoFieldName)
 			assert.True(t, ok)
 			assert.NotNil(t, annot)
-			
+
 			goType, ok := oext.GetGoTypeInfo(p.Extensions)
 			require.True(t, ok)
 			require.NotEmpty(t, goType)

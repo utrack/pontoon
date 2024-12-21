@@ -1,0 +1,111 @@
+{
+  feature: "004-docgen-anything",
+  insights: {
+    current_limitations: "docgen only works with Service interface implementations",
+    motivation: "httpinoapi package needs complete documentation",
+    key_changes_needed: [
+      "Add --all flag to enable full package documentation",
+      "Maintain default Service-only behavior",
+      "Handle package-level documentation when --all is used",
+      "Preserve existing docgen functionality",
+      "Support recursive structs",
+      "Convert errors to warnings in --all mode",
+    ],
+    rfc_decision: {
+      needed: false,
+      reasoning: [
+        "Small, well-defined scope",
+        "Extension of existing functionality",
+        "No architectural changes required",
+        "Implementation approach is straightforward",
+        "Feature description covers all technical details"
+      ]
+    }
+  },
+  technical_notes: {
+    affected_packages: [
+      "docgen",
+      "httpinoapi",
+    ],
+    documentation_format: "Maintains YAML structure as defined in project.md",
+    flags: {
+      "--all": {
+        description: "Enables documentation generation for all types in a package",
+        default: false,
+        affects: "Type discovery and documentation scope",
+        behavior: {
+          errors: "Converted to warnings to ensure partial documentation generation",
+          recursive_types: "Fully supported"
+        }
+      }
+    },
+    dependencies: {
+      concerns: [
+        "Cross-package type dependencies",
+        "Recursive struct handling",
+        "Generated code detection"
+      ]
+    },
+    error_handling: {
+      principles: [
+        "Convert errors to warnings in --all mode",
+        "Always generate partial documentation when possible",
+        "Clear warning messages with suggestions for improvement"
+      ]
+    },
+    integration: {
+      components: [
+        "AST parsing system",
+        "YAML documentation format",
+        "OpenAPI generation pipeline"
+      ]
+    },
+    implementation: {
+      phases: [
+        {
+          name: "CLI Enhancement",
+          tasks: [
+            "Add --all flag",
+            "Update help docs",
+            "Pass flag through pipeline"
+          ]
+        },
+        {
+          name: "Type Discovery",
+          tasks: [
+            "Package-wide collection",
+            "Recursive struct support",
+            "Generated code detection"
+          ]
+        },
+        {
+          name: "Warning System",
+          tasks: [
+            "Warning collection",
+            "Error conversion",
+            "Partial doc preservation"
+          ]
+        },
+        {
+          name: "Documentation",
+          tasks: [
+            "YAML generation updates",
+            "Recursive type handling",
+            "Type documentation merging"
+          ]
+        }
+      ],
+      testing_strategy: {
+        unit_tests: [
+          "Recursive types",
+          "Warning system"
+        ],
+        integration_tests: [
+          "httpinoapi package",
+          "Partial documentation",
+          "Warning reporting"
+        ]
+      }
+    }
+  },
+}

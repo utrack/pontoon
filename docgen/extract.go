@@ -3,7 +3,6 @@ package docgen
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"strings"
@@ -17,172 +16,25 @@ import (
 type Extractor struct {
 	fset *token.FileSet
 	pkg  *packages.Package
+
+	pkgSet map[string]*packages.Package
 }
 
 // NewExtractor creates a new documentation extractor.
-func NewExtractor(pkg *packages.Package) *Extractor {
+func NewExtractor(pkg *packages.Package, pkgSet map[string]*packages.Package) *Extractor {
 	return &Extractor{
-		fset: pkg.Fset,
-		pkg:  pkg,
+		fset:   pkg.Fset,
+		pkg:    pkg,
+		pkgSet: pkgSet,
 	}
 }
 
-// ExtractService extracts documentation from a service type.
-func (e *Extractor) ExtractService(t *types.Named) (*ServiceDoc, error) {
-	pos := e.fset.Position(t.Obj().Pos())
-	doc := &ServiceDoc{
-		Name:    t.Obj().Name(),
-		Package: e.pkg.PkgPath,
-		File:    pos.Filename,
-		Line:    pos.Line,
-		Types:   make(map[string]TypeDoc),
-	}
-
-	// Find the AST node for the service type
-	var f *ast.File
-	for _, file := range e.pkg.Syntax {
-		if e.fset.Position(file.Pos()).Filename == pos.Filename {
-			f = file
-			break
-		}
-	}
-	if f == nil {
-		return nil, errors.Errorf("file %s not found in package %s", pos.Filename, e.pkg.PkgPath)
-	}
-
-	// Find the type declaration
-	path, _ := astutil.PathEnclosingInterval(f, t.Obj().Pos(), t.Obj().Pos())
-	if len(path) == 0 {
-		return nil, errors.Errorf("%s: type declaration not found", pos)
-	}
-
-	// Extract service-level documentation
-	var typeSpec *ast.TypeSpec
-	var genDecl *ast.GenDecl
-	for _, node := range path {
-		if ts, ok := node.(*ast.TypeSpec); ok {
-			typeSpec = ts
-		}
-		if gd, ok := node.(*ast.GenDecl); ok {
-			genDecl = gd
-		}
-	}
-	if typeSpec == nil {
-		return nil, errors.Errorf("%s: not a type declaration", pos)
-	}
-
-	// Get comments from both the type spec and its parent GenDecl
-	var comments []string
-	if genDecl != nil && genDecl.Doc != nil {
-		comments = append(comments, genDecl.Doc.Text())
-	}
-	if typeSpec.Doc != nil {
-		comments = append(comments, typeSpec.Doc.Text())
-	}
-	if len(comments) > 0 {
-		doc.Comments = append(doc.Comments, DocComment{
-			ID: DocID{
-				PkgPath:  e.pkg.PkgPath,
-				TypeName: typeSpec.Name.Name,
-				FilePath: pos.Filename,
-				Line:     pos.Line,
-			}.Hash(),
-			Path:       e.pkg.PkgPath + "." + typeSpec.Name.Name,
-			Comment:    strings.Join(comments, "\n"),
-			SourceFile: pos.Filename,
-			Line:       pos.Line,
-			Type:       "service",
-		})
-	}
-
-	// Extract methods
-	for i := 0; i < t.NumMethods(); i++ {
-		method := t.Method(i)
-
-		// Get method signature
-		sig, ok := method.Type().(*types.Signature)
-		if !ok {
-			continue
-		}
-
-		// Get method position
-		methodPos := e.fset.Position(method.Pos())
-
-		// Find method declaration
-		methodPath, _ := astutil.PathEnclosingInterval(f, method.Pos(), method.Pos())
-		if len(methodPath) == 0 {
-			continue
-		}
-
-		// Get method documentation
-		var methodDoc string
-		for _, node := range methodPath {
-			if fd, ok := node.(*ast.FuncDecl); ok {
-				if fd.Doc != nil {
-					methodDoc = fd.Doc.Text()
-				}
-				break
-			}
-		}
-
-		// Extract input/output types
-		var inputTypeName, outputTypeName string
-		var returnsWellFormedError bool
-
-		var inputType types.Type
-		// the handlers are variadic; params can be anything
-		// take the first non-http.Request param
-		for i := 0; i < sig.Params().Len(); i++ {
-			param := sig.Params().At(i)
-			if types.IsInterface(param.Type()) {
-				continue
-			}
-			if param.Type().String() == "*net/http.Request" {
-				continue
-			}
-			inputType = param.Type()
-			break
-		}
-		if inputType != nil {
-			inputTypeName = typeString(inputType)
-			err := e.extractType(doc.Types, inputType)
-			if err != nil {
-				return nil, errors.Wrapf(err, "extracting input type for method %s", method.Name())
-			}
-		}
-
-		if sig.Results().Len() > 0 {
-			// if two results, assume second is error
-			if sig.Results().Len() == 2 {
-				returnsWellFormedError = true
-			}
-
-			outputTypeName = typeString(sig.Results().At(0).Type())
-
-			// handler can return just the error
-			if outputTypeName == "error" {
-				returnsWellFormedError = true
-				outputTypeName = ""
-			} else {
-
-				if err := e.extractType(doc.Types, sig.Results().At(0).Type()); err != nil {
-					return nil, errors.Wrapf(err, "extracting output type for method %s", method.Name())
-				}
-			}
-		}
-
-		doc.Methods = append(doc.Methods, MethodDoc{
-			Name:                   method.Name(),
-			Comment:                methodDoc,
-			File:                   methodPos.Filename,
-			Line:                   methodPos.Line,
-			InputType:              inputTypeName,
-			OutputType:             outputTypeName,
-			ReturnsWellFormedError: returnsWellFormedError,
-		})
-	}
-
-	return doc, nil
+// ExtractType extracts documentation from any type, creating a TypeDoc.
+func (e *Extractor) ExtractType(t *types.Named) (map[string]TypeDoc, error) {
+	// Extract type information
+	tt := make(map[string]TypeDoc)
+	err := e.extractType(tt, t)
+	return tt, errors.Wrap(err, "failed to extract type info")
 }
 
 // extractType recursively extracts type documentation
@@ -193,6 +45,7 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 			if t.String() == "error" {
 				return nil
 			}
+
 			// TODO do smth with interfaces
 		}
 		typeName := typeString(t)
@@ -205,25 +58,19 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 		// Get type position and AST node
 		pos := e.fset.Position(t.Obj().Pos())
 
+		tokFile := e.fset.File(t.Obj().Pos())
+		if tokFile == nil {
+			return errors.Errorf("file %s not found in the fileset", pos.Filename)
+		}
+
 		// Find the type's file
 		var f *ast.File
-		if t.Obj().Pkg().Path() == e.pkg.PkgPath {
-			for _, file := range e.pkg.Syntax {
-				if e.fset.Position(file.Pos()).Filename == pos.Filename {
-					f = file
-					break
-				}
-			}
-		} else {
-			for _, p := range e.pkg.Imports {
-				if p.PkgPath == t.Obj().Pkg().Path() {
-					for _, file := range p.Syntax {
-						if e.fset.Position(file.Pos()).Filename == pos.Filename {
-							f = file
-							break
-						}
-					}
-				}
+
+		pkg := e.pkgSet[t.Obj().Pkg().Path()]
+		for _, file := range pkg.Syntax {
+			if e.fset.Position(file.Pos()).Filename == pos.Filename {
+				f = file
+				break
 			}
 		}
 		if f == nil {
@@ -266,6 +113,10 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 			File:    pos.Filename,
 			Line:    pos.Line,
 		}
+		if pkg.Module == nil {
+			typeDocs[typeName] = typeDoc
+			return nil
+		}
 
 		// Get comments
 		var comments []string
@@ -277,6 +128,54 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 		}
 		if len(comments) > 0 {
 			typeDoc.Comment = strings.Join(comments, "\n")
+		}
+
+		// Extract functions and their types
+		for i := 0; i < t.NumMethods(); i++ {
+			method := t.Method(i)
+
+			// get method function's docs - name pos etc
+			funDoc, err := e.extractFunction(f, method)
+			if err != nil {
+				return errors.Wrapf(err, "extracting method signature from '%v'", method.Name())
+			}
+			if funDoc == nil {
+				continue
+			}
+			typeDoc.Methods = append(typeDoc.Methods, *funDoc)
+
+			sig, ok := method.Type().(*types.Signature)
+			if !ok {
+				return nil
+			}
+
+			// extract docs for every parameter
+			for i := 0; i < sig.Params().Len(); i++ {
+				param := sig.Params().At(i)
+				inputType := param.Type()
+				if inputType == nil {
+					continue
+				}
+				err := e.extractType(typeDocs, inputType)
+				if err != nil {
+					return errors.Wrapf(err, "extracting input type for method %s", method.Name())
+				}
+			}
+
+			// extract docs for every result
+			for i := 0; i < sig.Results().Len(); i++ {
+				result := sig.Results().At(i)
+				outputType := result.Type()
+				if outputType == nil {
+					continue
+				}
+				err := e.extractType(typeDocs, outputType)
+				if err != nil {
+					return errors.Wrapf(err, "extracting output type for method %s", method.Name())
+				}
+			}
+
+			typeDoc.Methods[len(typeDoc.Methods)-1] = *funDoc
 		}
 
 		// Extract fields for structs
@@ -364,10 +263,8 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 
 	case *types.Slice:
 		return e.extractType(typeDocs, t.Elem())
-
 	case *types.Array:
 		return e.extractType(typeDocs, t.Elem())
-
 	case *types.Map:
 		if err := e.extractType(typeDocs, t.Key()); err != nil {
 			return errors.Wrap(err, "extracting map key type")
@@ -394,81 +291,72 @@ func typeString(t types.Type) string {
 	})
 }
 
-// ExtractType extracts documentation from a type and its fields.
-func (e *Extractor) ExtractType(t types.Type) ([]DocComment, error) {
-	var comments []DocComment
+func (e *Extractor) extractFunction(f *ast.File, fun *types.Func) (*FunctionDoc, error) {
 
-	switch t := t.(type) {
-	case *types.Named:
-		pos := e.fset.Position(t.Obj().Pos())
-		f, err := parser.ParseFile(e.fset, pos.Filename, nil, parser.ParseComments)
-		if err != nil {
-			return nil, errors.Wrap(err, "parsing file")
-		}
+	sig, ok := fun.Type().(*types.Signature)
+	if !ok {
+		return nil, nil
+	}
 
-		path, _ := astutil.PathEnclosingInterval(f, t.Obj().Pos(), t.Obj().Pos())
-		if len(path) == 0 {
-			return nil, nil
-		}
+	// Get method position
+	funcPos := e.fset.Position(fun.Pos())
 
-		typeSpec, ok := path[0].(*ast.TypeSpec)
-		if !ok {
-			return nil, nil
-		}
+	// Find method declaration
+	funcPath, _ := astutil.PathEnclosingInterval(f, fun.Pos(), fun.Pos())
+	if len(funcPath) == 0 {
+		return nil, nil
+	}
 
-		if typeSpec.Doc != nil {
-			id := DocID{
-				PkgPath:  e.pkg.PkgPath,
-				TypeName: t.Obj().Name(),
-				FilePath: pos.Filename,
-				Line:     pos.Line,
+	// Get method documentation
+	var funcComment string
+	for _, node := range funcPath {
+		if fd, ok := node.(*ast.FuncDecl); ok {
+			if fd.Doc != nil {
+				funcComment = fd.Doc.Text()
 			}
-			comments = append(comments, DocComment{
-				ID:         id.Hash(),
-				Path:       id.PkgPath + "." + id.TypeName,
-				Comment:    typeSpec.Doc.Text(),
-				SourceFile: pos.Filename,
-				Line:       pos.Line,
-				Type:       "struct",
-				Identifier: id,
-			})
-		}
-
-		// Extract field documentation if it's a struct
-		if st, ok := t.Underlying().(*types.Struct); ok {
-			structType, ok := typeSpec.Type.(*ast.StructType)
-			if !ok {
-				return comments, nil
-			}
-
-			for i := 0; i < st.NumFields(); i++ {
-				field := st.Field(i)
-				if !field.Exported() {
-					continue
-				}
-
-				astField := structType.Fields.List[i]
-				if astField.Doc != nil {
-					id := DocID{
-						PkgPath:   e.pkg.PkgPath,
-						TypeName:  t.Obj().Name(),
-						FieldPath: []string{field.Name()},
-						FilePath:  pos.Filename,
-						Line:      e.fset.Position(astField.Pos()).Line,
-					}
-					comments = append(comments, DocComment{
-						ID:         id.Hash(),
-						Path:       id.PkgPath + "." + id.TypeName + "." + field.Name(),
-						Comment:    astField.Doc.Text(),
-						SourceFile: pos.Filename,
-						Line:       e.fset.Position(astField.Pos()).Line,
-						Type:       "field",
-						Identifier: id,
-					})
-				}
-			}
+			break
 		}
 	}
 
-	return comments, nil
+	doc := &FunctionDoc{
+		Name:    fun.Name(),
+		Comment: funcComment,
+		File:    funcPos.Filename,
+		Line:    funcPos.Line,
+	}
+
+	for i := 0; i < sig.Params().Len(); i++ {
+		var inputType types.Type
+		param := sig.Params().At(i)
+		if types.IsInterface(param.Type()) {
+			continue
+		}
+		if param.Type().String() == "*net/http.Request" {
+			continue
+		}
+		inputType = param.Type()
+		if inputType != nil {
+			inputTypeName := typeString(inputType)
+			doc.Params = append(doc.Params, FunctionParamDoc{
+				Name: param.Name(),
+				Type: inputTypeName,
+			})
+		}
+	}
+
+	for i := 0; i < sig.Results().Len(); i++ {
+		var outputType types.Type
+		result := sig.Results().At(i)
+
+		outputType = result.Type()
+		if outputType != nil {
+			outputTypeName := typeString(outputType)
+			doc.Returns = append(doc.Returns, FunctionParamDoc{
+				Name: result.Name(),
+				Type: outputTypeName,
+			})
+		}
+	}
+
+	return doc, nil
 }

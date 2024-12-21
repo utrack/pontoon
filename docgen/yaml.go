@@ -12,42 +12,35 @@ import (
 
 // YAMLDoc represents the YAML documentation format.
 type YAMLDoc struct {
-	Checksum string                 `yaml:"checksum"`
-	Services map[string]YAMLService `yaml:"services"`
-	Types    map[string]YAMLType    `yaml:"types"`
-}
-
-// YAMLService represents a service in YAML format.
-type YAMLService struct {
-	ID      string            `yaml:"id"`
-	Type    string            `yaml:"type"`
-	PkgPath string            `yaml:"pkg_path"`
-	Name    string            `yaml:"type_name"`
-	File    string            `yaml:"file"`
-	Line    int               `yaml:"line"`
-	Comment string            `yaml:"comment,omitempty"`
-	Methods map[string]Method `yaml:"methods,omitempty"`
+	Checksum string              `yaml:"checksum"`
+	Types    map[string]YAMLType `yaml:"types"`
 }
 
 // Method represents a service method in YAML format.
-type Method struct {
-	Comment                string `yaml:"comment,omitempty"`
-	File                   string `yaml:"file"`
-	Line                   int    `yaml:"line"`
-	InputType              string `yaml:"input_type,omitempty"`
-	OutputType             string `yaml:"output_type,omitempty"`
-	ReturnsWellFormedError bool   `yaml:"formed_error,omitempty"`
+type YAMLMethod struct {
+	Comment string            `yaml:"comment,omitempty"`
+	File    string            `yaml:"file"`
+	Line    int               `yaml:"line"`
+	Inputs  []YAMLMethodParam `yaml:"inputs"`
+	Outputs []YAMLMethodParam `yaml:"outputs"`
+}
+
+type YAMLMethodParam struct {
+	Name string `yaml:"name"`
+	Type string `yaml:"type"`
 }
 
 // YAMLType represents a type in YAML format.
 type YAMLType struct {
-	Package  string      `yaml:"package"`
-	Name     string      `yaml:"name"`
-	File     string      `yaml:"file"`
-	Line     int         `yaml:"line"`
-	Comment  string      `yaml:"comment,omitempty"`
-	Fields   []YAMLField `yaml:"fields,omitempty"`
-	IsStruct bool        `yaml:"is_struct"`
+	ID       string                `yaml:"id"`
+	PkgPath  string                `yaml:"package"`
+	Name     string                `yaml:"name"`
+	File     string                `yaml:"file"`
+	Line     int                   `yaml:"line"`
+	Comment  string                `yaml:"comment,omitempty"`
+	Fields   []YAMLField           `yaml:"fields,omitempty"`
+	Methods  map[string]YAMLMethod `yaml:"methods,omitempty"`
+	IsStruct bool                  `yaml:"is_struct"`
 }
 
 // YAMLField represents a field in YAML format.
@@ -72,89 +65,33 @@ type YAMLFieldMap struct {
 }
 
 // GenerateYAML generates YAML documentation from service documentation.
-func GenerateYAML(docs []*ServiceDoc, sourceFiles []string) ([]byte, error) {
+func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc) ([]byte, error) {
 	// Create YAML document
 	yamlDoc := &YAMLDoc{
-		Services: make(map[string]YAMLService),
-		Types:    make(map[string]YAMLType),
+		Types: make(map[string]YAMLType),
 	}
 
-	// First, collect all types from all services
-	for _, doc := range docs {
-		for typeName, typeDoc := range doc.Types {
-			// Only add if not already present or if this one has more information
-			existing, exists := yamlDoc.Types[typeName]
-			if !exists || (existing.Comment == "" && typeDoc.Comment != "") {
-				yamlDoc.Types[typeName] = YAMLType{
-					Package:  typeDoc.Package,
-					Name:     typeDoc.Name,
-					File:     typeDoc.File,
-					Line:     typeDoc.Line,
-					Comment:  typeDoc.Comment,
-					Fields:   make([]YAMLField, len(typeDoc.Fields)),
-					IsStruct: typeDoc.IsStruct,
-				}
-				for i, field := range typeDoc.Fields {
-					tf := YAMLField{
-						Name:       field.Name,
-						Type:       field.Type,
-						Comment:    field.Comment,
-						Tags:       field.Tags,
-						Nullable:   field.Nullable,
-						IsEmbedded: field.IsEmbedded,
-					}
-
-					if field.IsMap != nil {
-						tf.IsMap = &YAMLFieldMap{
-							TypeKey:   field.IsMap.TypeKey,
-							TypeValue: field.IsMap.TypeValue,
-						}
-					}
-					if field.IsArray != nil {
-						tf.IsArray = &YAMLFieldArray{
-							Type: field.IsArray.Type,
-						}
-					}
-					yamlDoc.Types[typeName].Fields[i] = tf
-				}
-			}
-		}
-	}
-
-	// Then add services
-	for _, doc := range docs {
-		service := YAMLService{
-			ID:      doc.Package + "." + doc.Name,
-			Type:    "service",
-			PkgPath: doc.Package,
-			Name:    doc.Name,
-			File:    doc.File,
-			Line:    doc.Line,
-			Methods: make(map[string]Method),
+	for _, typeDoc := range auxTypes {
+		t := YAMLType{
+			//TODO ID:       typeDoc.ID,
+			PkgPath:  typeDoc.Package,
+			Name:     typeDoc.Name,
+			File:     typeDoc.File,
+			Line:     typeDoc.Line,
+			Comment:  typeDoc.Comment,
+			Fields:   make([]YAMLField, len(typeDoc.Fields)),
+			IsStruct: typeDoc.IsStruct,
+			Methods:  make(map[string]YAMLMethod),
 		}
 
-		// Add comments if present
-		if len(doc.Comments) > 0 {
-			// Sort comments by line number for stable output
-			sort.Slice(doc.Comments, func(i, j int) bool {
-				return doc.Comments[i].Line < doc.Comments[j].Line
-			})
-			service.Comment = doc.Comments[0].Comment
+		for i, field := range typeDoc.Fields {
+			t.Fields[i] = yConvertField(field)
 		}
 
-		// Add methods
-		for _, m := range doc.Methods {
-			service.Methods[m.Name] = Method{
-				Comment:                m.Comment,
-				File:                   m.File,
-				Line:                   m.Line,
-				InputType:              m.InputType,
-				OutputType:             m.OutputType,
-				ReturnsWellFormedError: m.ReturnsWellFormedError,
-			}
+		for _, method := range typeDoc.Methods {
+			t.Methods[method.Name] = yConvertMethod(method)
 		}
-
-		yamlDoc.Services[doc.Name] = service
+		yamlDoc.Types[typeDoc.Name] = t
 	}
 
 	// Calculate checksum of source files
@@ -194,4 +131,54 @@ func init() {
 const docYAML = ` + "`" + string(content) + "`\n"
 
 	return []byte(ret)
+}
+
+func yConvertMethod(m FunctionDoc) YAMLMethod {
+	ret := YAMLMethod{
+		Comment: m.Comment,
+		File:    m.File,
+		Line:    m.Line,
+		Inputs:  make([]YAMLMethodParam, len(m.Params)),
+		Outputs: make([]YAMLMethodParam, len(m.Returns)),
+	}
+
+	for i, param := range m.Params {
+		ret.Inputs[i] = YAMLMethodParam{
+			Name: param.Name,
+			Type: param.Type,
+		}
+	}
+
+	for i, param := range m.Returns {
+		ret.Outputs[i] = YAMLMethodParam{
+			Name: param.Name,
+			Type: param.Type,
+		}
+	}
+	return ret
+}
+
+func yConvertField(field FieldDoc) YAMLField {
+
+	tf := YAMLField{
+		Name:       field.Name,
+		Type:       field.Type,
+		Comment:    field.Comment,
+		Tags:       field.Tags,
+		Nullable:   field.Nullable,
+		IsEmbedded: field.IsEmbedded,
+	}
+
+	if field.IsMap != nil {
+		tf.IsMap = &YAMLFieldMap{
+			TypeKey:   field.IsMap.TypeKey,
+			TypeValue: field.IsMap.TypeValue,
+		}
+	}
+	if field.IsArray != nil {
+		tf.IsArray = &YAMLFieldArray{
+			Type: field.IsArray.Type,
+		}
+	}
+	return tf
 }

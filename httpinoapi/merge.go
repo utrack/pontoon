@@ -3,9 +3,12 @@ package httpinoapi
 import (
 	"fmt"
 
+	"github.com/pb33f/libopenapi"
+	vpkg "github.com/pb33f/libopenapi-validator"
 	"github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
+	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/openapi/docmerge"
 	"github.com/utrack/pontoon/openapi/httpinmeditate"
 )
@@ -74,7 +77,6 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 	}
 	// TODO compare if components are the same on conflict
 	for k, v := range oapigen.Components().Schemas.FromNewest() {
-		fmt.Println("extract from oapi - schema ", k)
 		g.components.Schemas.Set(k, v)
 	}
 	// TODO there might be more than just Schemas
@@ -139,22 +141,22 @@ func (g *Generator) Build() (*v3.Document, error) {
 		return nil, fmt.Errorf("merge documentation: %w", err)
 	}
 
-	// buf, err := doc.Render()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("render document: %w", err)
-	// }
-	// parsedDoc, err := libopenapi.NewDocument(buf)
-	// if err != nil {
-	// 	//return nil, errors.Wrap(err, "failed to back-parse the document")
-	// }
-	// validator, errs := vpkg.NewValidator(parsedDoc)
-	// if len(errs) > 0 {
-	// 	return nil, errors.Errorf("failed to create validator: %v", errs)
-	// }
-	// valid, validationErrs := validator.ValidateDocument()
-	// if !valid {
-	// 	return nil, fmt.Errorf("validation errors: %v", validationErrs)
-	// }
+	buf, err := doc.Render()
+	if err != nil {
+		return nil, fmt.Errorf("render document: %w", err)
+	}
+	parsedDoc, err := libopenapi.NewDocument(buf)
+	if err != nil {
+		//return nil, errors.Wrap(err, "failed to back-parse the document")
+	}
+	validator, errs := vpkg.NewValidator(parsedDoc)
+	if len(errs) > 0 {
+		return nil, errors.Errorf("failed to create validator: %v", errs)
+	}
+	valid, validationErrs := validator.ValidateDocument()
+	if !valid {
+		return nil, fmt.Errorf("validation errors: %v", validationErrs)
+	}
 
 	return mergedDoc, nil
 }

@@ -62,7 +62,7 @@ func TestMerge(t *testing.T) {
 			docs: &docgen.YAMLDoc{
 				Types: map[string]docgen.YAMLType{
 					"github.com/example/pkg.User": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "User",
 						Comment: "User represents a user in the system",
 						Fields: []docgen.YAMLField{
@@ -152,7 +152,7 @@ func TestMerge(t *testing.T) {
 			docs: &docgen.YAMLDoc{
 				Types: map[string]docgen.YAMLType{
 					"github.com/example/pkg.User": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "User",
 						Comment: "New description",
 						Fields: []docgen.YAMLField{
@@ -249,22 +249,22 @@ func TestMerge(t *testing.T) {
 			docs: &docgen.YAMLDoc{
 				Types: map[string]docgen.YAMLType{
 					"github.com/example/pkg.CompositeUser": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "CompositeUser",
 						Comment: "CompositeUser represents a user with multiple roles",
 					},
 					"github.com/example/pkg.BaseUser": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "BaseUser",
 						Comment: "BaseUser contains common user fields",
 					},
 					"github.com/example/pkg.AdminUser": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "AdminUser",
 						Comment: "AdminUser represents an administrator",
 					},
 					"github.com/example/pkg.GuestUser": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "GuestUser",
 						Comment: "GuestUser represents a guest user",
 					},
@@ -357,7 +357,7 @@ func TestMerge(t *testing.T) {
 			docs: &docgen.YAMLDoc{
 				Types: map[string]docgen.YAMLType{
 					"github.com/example/pkg.RecursiveType": {
-						Package: "github.com/example/pkg",
+						PkgPath: "github.com/example/pkg",
 						Name:    "RecursiveType",
 						Comment: "RecursiveType represents a type that references itself",
 					},
