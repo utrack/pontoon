@@ -63,9 +63,8 @@ func main() {
 		log.Fatal("failed to load sdesc.Service: " + err.Error())
 	}
 
-	// Process each package
-	var allFiles []string
-
+	// Traverse the imports map and build a
+	// complete pkgMap
 	allPkgs := make(map[string]*packages.Package)
 	for _, p := range pkgs {
 		buildPkgMap(allPkgs, p)
@@ -92,6 +91,7 @@ func main() {
 
 			t, ok := obj.Type().(*types.Named)
 			if !ok {
+				fmt.Println("not a named type:", obj.String())
 				continue
 			}
 
@@ -106,10 +106,8 @@ func main() {
 				p.Fset.Position(obj.Pos()).Line,
 				obj.Type().String())
 
-			// Create a minimal ServiceDoc for the type
-
 			// Extract type documentation
-			extType, err := extractor.ExtractType(t)
+			types, err := extractor.ExtractType(t)
 			if err != nil {
 				fmt.Printf("Warning: %s:%d: failed to extract comments for %s: %v\n",
 					p.Fset.Position(obj.Pos()).Filename,
@@ -119,8 +117,8 @@ func main() {
 				continue
 			}
 
-			for k := range extType {
-				v := extType[k]
+			for k := range types {
+				v := types[k]
 				typesDocs = append(typesDocs, &v)
 			}
 
@@ -132,7 +130,7 @@ func main() {
 			pkgDir := filepath.Dir(p.CompiledGoFiles[0])
 			outFile := filepath.Join(pkgDir, "docs_gen.go")
 
-			tomlData, err := docgen.GenerateYAML(allFiles, typesDocs)
+			tomlData, err := docgen.GenerateYAML(p.CompiledGoFiles, typesDocs)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -143,7 +141,6 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			allFiles = append(allFiles, outFile)
 		}
 	}
 

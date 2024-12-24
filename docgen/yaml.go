@@ -95,6 +95,7 @@ func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc) ([]byte, error) {
 	}
 
 	// Calculate checksum of source files
+	// TODO atm calculating just the paths to source files
 	h := sha256.New()
 	files := make([]string, len(sourceFiles))
 	copy(files, sourceFiles)

@@ -41,14 +41,6 @@ type DocComment struct {
 	Identifier DocID  // Full identifier information
 }
 
-// MethodDoc represents documentation for a service method.
-type MethodDoc struct {
-	FunctionDoc
-	InputType              string
-	OutputType             string
-	ReturnsWellFormedError bool
-}
-
 // FunctionDoc is some function's documentation.
 type FunctionDoc struct {
 	Name    string
