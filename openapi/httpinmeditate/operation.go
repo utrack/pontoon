@@ -102,6 +102,7 @@ func (w *walker) pullStructProperties(structGoType *oext.GoTypeInfo, props *orde
 			if err != nil {
 				return err
 			}
+			continue
 		}
 
 		ext := item.Schema().Extensions

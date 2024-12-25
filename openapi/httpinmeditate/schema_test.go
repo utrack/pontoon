@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ggicci/httpin"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
@@ -119,6 +120,23 @@ type ComplexTypes struct {
 	// } `in:"form=anon_struct"`
 }
 
+type structWithFile struct {
+	File *httpin.File `in:"form=file"`
+}
+
+func TestGenerator_SchemaWithFile(t *testing.T) {
+	g := NewGenerator()
+
+	//debugEnabled = true
+	schema, err := g.generateSchema(reflect.TypeOf(structWithFile{}))
+	require.NoError(t, err)
+	require.NotNil(t, schema)
+
+	// Convert schema to map for easier testing
+	doc := schema.Schema()
+	assert.Equal(t, []string{"object"}, doc.Type)
+
+}
 func TestGenerator_GenerateSchema(t *testing.T) {
 	g := NewGenerator()
 
@@ -364,12 +382,12 @@ func TestGenerator_GenerateSchema_Recursive(t *testing.T) {
 	require.NotNil(t, parentSchema.OneOf)
 	require.Len(t, parentSchema.OneOf, 2)
 	assert.Equal(t, []string{"null"}, parentSchema.OneOf[0].Schema().Type)
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", parentSchema.OneOf[1].Schema().SchemaTypeRef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", parentSchema.OneOf[1].Schema().AllOf[0].GetReference())
 
 	// Check Children field (recursive slice)
 	childrenSchema := props.GetOrZero("children").Schema()
 	assert.Equal(t, []string{"array"}, childrenSchema.Type)
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", childrenSchema.Items.A.Schema().SchemaTypeRef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", childrenSchema.Items.A.Schema().AllOf[0].GetReference())
 }
 
 func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
@@ -475,7 +493,9 @@ func TestGenerator_GenerateSchema_JSONTags(t *testing.T) {
 	ref := "github.com_utrack_pontoon_openapi_httpinmeditate.StructWithJSONField"
 	refString := "#/components/schemas/" + ref
 
-	require.Equal(t, refString, jsonField.Schema().SchemaTypeRef)
+	// workaround for OAPI 3.0-style embeddings
+	require.True(t, len(jsonField.Schema().AllOf) == 1)
+	require.Equal(t, refString, jsonField.Schema().AllOf[0].GetReference())
 
 	dict := g.Components()
 	nestedStructDesc, ok := dict.Schemas.Get(ref)
@@ -603,14 +623,14 @@ func assertMapRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaPr
 	assert.Equal(t, []string{"object"}, schema.Type)
 	require.NotNil(t, schema.AdditionalProperties)
 	require.NotNil(t, schema.AdditionalProperties.A)
-	require.Equal(t, ref, schema.AdditionalProperties.A.Schema().SchemaTypeRef)
+	require.Equal(t, ref, schema.AdditionalProperties.A.Schema().AllOf[0].GetReference())
 }
 
 func assertRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaProxy], field string, ref string) {
 	fmt.Println(field)
 	prop := props.GetOrZero(field)
 	require.NotNil(t, prop)
-	refSchema := props.GetOrZero(field).Schema().SchemaTypeRef
+	refSchema := props.GetOrZero(field).Schema().AllOf[0].GetReference()
 	assert.Equal(t, ref, refSchema)
 }
 
@@ -618,13 +638,13 @@ func assertNullableRefType(t *testing.T, props *orderedmap.Map[string, *base.Sch
 	schema := props.GetOrZero(field).Schema()
 	require.NotNil(t, schema.OneOf)
 	assert.Equal(t, []string{"null"}, schema.OneOf[0].Schema().Type)
-	assert.Equal(t, ref, schema.OneOf[1].Schema().SchemaTypeRef)
+	assert.Equal(t, ref, schema.OneOf[1].Schema().AllOf[0].GetReference())
 }
 
 func assertArrayRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaProxy], field string, ref string) {
 	schema := props.GetOrZero(field).Schema()
 	assert.Equal(t, []string{"array"}, schema.Type)
-	assert.Equal(t, ref, schema.Items.A.Schema().SchemaTypeRef)
+	assert.Equal(t, ref, schema.Items.A.Schema().AllOf[0].GetReference())
 }
 
 func assertArrayNullableRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaProxy], field string, ref string) {
@@ -637,7 +657,7 @@ func assertArrayNullableRefType(t *testing.T, props *orderedmap.Map[string, *bas
 	if elem.IsReference() {
 		assert.Equal(t, ref, elem.GetReference())
 	} else {
-		assert.Equal(t, ref, elem.Schema().SchemaTypeRef)
+		assert.Equal(t, ref, elem.Schema().AllOf[0].GetReference())
 	}
 }
 

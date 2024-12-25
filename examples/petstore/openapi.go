@@ -24,7 +24,7 @@ func RegisterHandlers(mux *http.ServeMux, store *Store) error {
 		httpinoapi.WithOutputStruct(Pet{}),
 	)
 	gen.Operation(http.MethodGet,
-		"/pets",
+		"/pets/",
 		store.ListPets,
 		httpinoapi.WithInputStruct(ListPetsRequest{}),
 		httpinoapi.WithOutputStruct(ListPetsResponse{}),

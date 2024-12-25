@@ -23,6 +23,14 @@ func parseField(field reflect.StructField, isInBody bool) (*fieldInfo, error) {
 		Tags:         make(map[string]string),
 	}
 
+	jsonTag := field.Tag.Get("json")
+	if jsonTag != "" {
+		tvs := strings.Split(jsonTag, ",")
+		if len(tvs) > 0 && tvs[0] != "" {
+			info.Name = tvs[0]
+		}
+	}
+
 	if isInBody {
 		tag := field.Tag.Get("json")
 		if tag == "" {

@@ -1,6 +1,10 @@
 package petstore
 
-import "time"
+import (
+	"time"
+
+	"github.com/ggicci/httpin"
+)
 
 // Pet represents a pet in the store
 type Pet struct {
@@ -19,6 +23,7 @@ type Category struct {
 	ID int64 `json:"id"`
 	// Name is the category name; non-unique.
 	Name string `json:"name"`
+	Cover *httpin.File `json:"cover_img"`
 }
 
 // Tag represents a pet tag

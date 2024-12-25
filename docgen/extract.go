@@ -37,6 +37,24 @@ func (e *Extractor) ExtractType(t *types.Named) (map[string]TypeDoc, error) {
 	return tt, errors.Wrap(err, "failed to extract type info")
 }
 
+func (e *Extractor) ExtractFunction(t *types.Signature, obj types.Object) (*FunctionDoc, error) {
+	pos := e.fset.Position(obj.Pos())
+
+	var f *ast.File
+
+	pkg := e.pkgSet[obj.Pkg().Path()]
+	for _, file := range pkg.Syntax {
+		if e.fset.Position(file.Pos()).Filename == pos.Filename {
+			f = file
+			break
+		}
+	}
+	if f == nil {
+		return nil, errors.Errorf("%s.%s: function sig declaration not found", obj.Pkg().Path(), obj.Name())
+	}
+	return e.extractFunction(f, obj.(*types.Func))
+}
+
 // extractType recursively extracts type documentation
 func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error {
 	switch t := t.(type) {
@@ -319,6 +337,7 @@ func (e *Extractor) extractFunction(f *ast.File, fun *types.Func) (*FunctionDoc,
 	}
 
 	doc := &FunctionDoc{
+		Package: fun.Pkg().Path(),
 		Name:    fun.Name(),
 		Comment: funcComment,
 		File:    funcPos.Filename,

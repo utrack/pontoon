@@ -83,45 +83,61 @@ func main() {
 		extractor := docgen.NewExtractor(p, allPkgs)
 
 		var typesDocs []*docgen.TypeDoc
+		var funcDocs []*docgen.FunctionDoc
 
 		scope := p.Types.Scope()
 
 		for _, name := range scope.Names() {
 			obj := scope.Lookup(name)
 
-			t, ok := obj.Type().(*types.Named)
-			if !ok {
-				fmt.Println("not a named type:", obj.String())
-				continue
-			}
+			switch t := obj.Type().(type) {
+			case *types.Named:
 
-			var err error
+				var err error
 
-			if !*allFlag && !types.Implements(t, descType) {
-				continue
-			}
+				if !*allFlag && !types.Implements(t, descType) {
+					continue
+				}
 
-			fmt.Printf("%s:%d: found type %s\n",
-				p.Fset.Position(obj.Pos()).Filename,
-				p.Fset.Position(obj.Pos()).Line,
-				obj.Type().String())
-
-			// Extract type documentation
-			types, err := extractor.ExtractType(t)
-			if err != nil {
-				fmt.Printf("Warning: %s:%d: failed to extract comments for %s: %v\n",
+				fmt.Printf("%s:%d: found type %s\n",
 					p.Fset.Position(obj.Pos()).Filename,
 					p.Fset.Position(obj.Pos()).Line,
-					obj.Type().String(),
-					err)
-				continue
-			}
+					obj.Type().String())
 
-			for k := range types {
-				v := types[k]
-				typesDocs = append(typesDocs, &v)
-			}
+				// Extract type documentation
+				types, err := extractor.ExtractType(t)
+				if err != nil {
+					fmt.Printf("Warning: %s:%d: failed to extract comments for %s: %v\n",
+						p.Fset.Position(obj.Pos()).Filename,
+						p.Fset.Position(obj.Pos()).Line,
+						obj.Type().String(),
+						err)
+					continue
+				}
 
+				for k := range types {
+					v := types[k]
+					typesDocs = append(typesDocs, &v)
+				}
+			case *types.Signature:
+
+				fmt.Printf("%s:%d: found function %s\n",
+					p.Fset.Position(obj.Pos()).Filename,
+					p.Fset.Position(obj.Pos()).Line,
+					obj.Name())
+				f, err := extractor.ExtractFunction(t, obj)
+				if err != nil {
+					fmt.Printf("Warning: %s:%d: failed to extract comments for %s: %v\n",
+						p.Fset.Position(obj.Pos()).Filename,
+						p.Fset.Position(obj.Pos()).Line,
+						obj.Type().String(),
+						err)
+					continue
+				}
+				funcDocs = append(funcDocs, f)
+			default:
+				// TODO log if debug on
+			}
 		}
 
 		// Generate a single Go file in the package directory
@@ -130,7 +146,7 @@ func main() {
 			pkgDir := filepath.Dir(p.CompiledGoFiles[0])
 			outFile := filepath.Join(pkgDir, "docs_gen.go")
 
-			tomlData, err := docgen.GenerateYAML(p.CompiledGoFiles, typesDocs)
+			tomlData, err := docgen.GenerateYAML(p.CompiledGoFiles, typesDocs,funcDocs)
 			if err != nil {
 				log.Fatal(err)
 			}

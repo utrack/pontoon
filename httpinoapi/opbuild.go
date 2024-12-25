@@ -28,20 +28,61 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 			return nil, fmt.Errorf("generate request params: %w", err)
 		}
 
-		if reqSchema != nil {
-			if !reqSchema.IsReference() && reqSchema.Schema().SchemaTypeRef != "" {
-				reqSchema = base.CreateSchemaProxyRef(reqSchema.Schema().SchemaTypeRef)
+		// if form type is not set, default to application/x-www-form-urlencoded
+		// however, if we upload files, it MUST be multipart/form-data
+		reqFormType := "application/x-www-form-urlencoded"
+
+		formParams := []*v3.Parameter{}
+		otherParams := []*v3.Parameter{}
+		for _, p := range reqParams {
+			if ov, ok := p.Extensions.Get("x-pontoon-form-type"); ok {
+				reqFormType = ov.Value
 			}
+			if p.In == "form" {
+				formParams = append(formParams, p)
+			} else {
+				otherParams = append(otherParams, p)
+			}
+		}
+
+		if len(formParams) > 0 {
 			op.RequestBody = &v3.RequestBody{
 				Content: orderedmap.New[string, *v3.MediaType](),
+			}
+			formSchema := &base.Schema{
+				Type:       []string{"object"},
+				Properties: orderedmap.New[string, *base.SchemaProxy](),
+			}
+			fmt.Println("formparams", formParams)
+			for _, p := range formParams {
+				p.In = ""
+				formSchema.Properties.Set(p.Name, p.Schema)
+			}
+			op.RequestBody.Content.Set(reqFormType, &v3.MediaType{
+				Schema: base.CreateSchemaProxy(formSchema),
+			})
+			op.Parameters = formParams
+		}
+
+		if reqSchema != nil {
+			fmt.Println("reqschema", reqSchema)
+			if !reqSchema.IsReference() && reqSchema.Schema().SchemaTypeRef != "" {
+				fmt.Println("ref")
+				reqSchema = base.CreateSchemaProxyRef(reqSchema.Schema().SchemaTypeRef)
+			}
+
+			if op.RequestBody == nil {
+				op.RequestBody = &v3.RequestBody{
+					Content: orderedmap.New[string, *v3.MediaType](),
+				}
 			}
 			op.RequestBody.Content.Set("application/json", &v3.MediaType{
 				Schema: reqSchema,
 			})
 		}
 
-		if len(reqParams) > 0 {
-			op.Parameters = reqParams
+		if len(otherParams) > 0 {
+			op.Parameters = otherParams
 		}
 	}
 

@@ -59,7 +59,10 @@ func TestPetStoreOpenAPI(t *testing.T) {
 	require.True(t, exists)
 	require.NotNil(t, reqContent.Schema)
 
-	require.True(t, reqContent.Schema.IsReference())
+	// workaround for OAPI 3.0-style field embeddings
+	require.False(t, reqContent.Schema.IsReference())
+	require.True(t, len(reqContent.Schema.Schema().AllOf) == 1)
+	require.True(t, reqContent.Schema.Schema().AllOf[0].IsReference())
 
 	// Verify PUT /pets/{id}
 	petsIDPath, exists := doc.Paths.PathItems.Get("/pets/{id}")

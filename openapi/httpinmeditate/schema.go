@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ggicci/httpin/core"
 	base "github.com/pb33f/libopenapi/datamodel/high/base"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
@@ -69,6 +70,10 @@ func (g *Generator) JSONSchemaRef(t reflect.Type) (*base.SchemaProxy, error) {
 func (g *Generator) SchemaRef(t reflect.Type) (*base.SchemaProxy, error) {
 	return g.generateSchema(t, withRootAsReference(false))
 }
+
+var (
+	httpinFile = reflect.TypeFor[core.FileHeader]()
+)
 
 // GenerateSchema generates an OpenAPI 3.1 Component Schema for the given type
 func (g *Generator) generateSchema(t reflect.Type, oo ...Option) (*base.SchemaProxy, error) {
@@ -247,6 +252,20 @@ func (g *Generator) generateFieldSchema(field *fieldInfo) (*base.SchemaProxy, er
 		})
 	}
 
+	if fieldType.Implements(httpinFile) {
+		extensions.Set("x-pontoon-form-type", &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Tag:   "!!str",
+			Value: "multipart/form-data",
+		})
+
+		return base.CreateSchemaProxy(&base.Schema{
+			Type:       []string{"string"},
+			Format:     "binary",
+			Extensions: extensions,
+		}), nil
+	}
+
 	// Handle pointer types first
 	if fieldType.Kind() == reflect.Ptr {
 		debugLog("field is ptr: '%v' %v", field.Name, field.Type.String())
@@ -298,33 +317,25 @@ func (g *Generator) generateFieldSchema(field *fieldInfo) (*base.SchemaProxy, er
 		if err != nil {
 			return nil, err
 		}
-
-		if structSchema.IsReference() {
-			debugLog("  -> is reference")
-			schema := &base.Schema{
-				SchemaTypeRef: structSchema.GetReference(),
-			}
-			if extensions.Len() > 0 {
-				schema.Extensions = extensions
-			}
-			return base.CreateSchemaProxy(schema), nil
+		// now, make it into a reference
+		if !structSchema.IsReference() {
+			structSchema = base.CreateSchemaProxyRef(structSchema.Schema().SchemaTypeRef)
 		}
 
-		if structSchema.Schema() != nil && structSchema.Schema().SchemaTypeRef != "" {
-			debugLog("  -> ref != nil")
-			schema := &base.Schema{
-				SchemaTypeRef: structSchema.Schema().SchemaTypeRef,
-			}
-			if extensions.Len() > 0 {
-				schema.Extensions = extensions
-			}
-			return base.CreateSchemaProxy(schema), nil
+		ref := structSchema
+
+		// TODO this is an OpenAPI 3.0-style comments-on-refs
+		// in OAPI 3.1 you can use $ref with extensions inlined
+		// see https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#schema-object
+		// wait for libopenapi to implement refs with keywords
+		schema := &base.Schema{
+			Extensions: extensions,
+			AllOf: []*base.SchemaProxy{
+				ref,
+			},
 		}
 
-		if extensions.Len() > 0 && structSchema.Schema() != nil {
-			structSchema.Schema().Extensions = extensions
-		}
-		return structSchema, nil
+		return base.CreateSchemaProxy(schema), nil
 
 	case reflect.Slice, reflect.Array:
 		itemSchema, err := g.generateFieldSchema(&fieldInfo{

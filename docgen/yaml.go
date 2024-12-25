@@ -14,7 +14,9 @@ import (
 type YAMLDoc struct {
 	Checksum string              `yaml:"checksum"`
 	Types    map[string]YAMLType `yaml:"types"`
+	Functions map[string]YAMLMethod `yaml:"functions"`
 }
+
 
 // Method represents a service method in YAML format.
 type YAMLMethod struct {
@@ -65,10 +67,11 @@ type YAMLFieldMap struct {
 }
 
 // GenerateYAML generates YAML documentation from service documentation.
-func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc) ([]byte, error) {
+func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc,methods []*FunctionDoc) ([]byte, error) {
 	// Create YAML document
 	yamlDoc := &YAMLDoc{
 		Types: make(map[string]YAMLType),
+		Functions: make(map[string]YAMLMethod),
 	}
 
 	for _, typeDoc := range auxTypes {
@@ -92,6 +95,9 @@ func GenerateYAML(sourceFiles []string, auxTypes []*TypeDoc) ([]byte, error) {
 			t.Methods[method.Name] = yConvertMethod(method)
 		}
 		yamlDoc.Types[typeDoc.Package+"."+typeDoc.Name] = t
+	}
+	for _,funcDoc := range methods {
+		yamlDoc.Functions[funcDoc.Package+"."+funcDoc.Name] = yConvertMethod(*funcDoc)
 	}
 
 	// Calculate checksum of source files

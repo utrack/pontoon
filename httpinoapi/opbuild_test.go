@@ -160,10 +160,14 @@ func TestGenerator_Build_ComponentReferences(t *testing.T) {
 	require.True(t, exists)
 	require.NotNil(t, reqContent.Schema)
 
-	require.True(t, reqContent.Schema.IsReference())
+	require.False(t, reqContent.Schema.IsReference())
+	require.True(t, len(reqContent.Schema.Schema().AllOf) == 1)
+	require.True(t, reqContent.Schema.Schema().AllOf[0].IsReference())
 
-	require.NotEmpty(t, reqContent.Schema.GetReference(), "Request body schema should be a reference")
-	require.True(t, strings.HasPrefix(reqContent.Schema.GetReference(), "#/components/schemas/"),
+	ref := reqContent.Schema.Schema().AllOf[0].GetReference()
+
+	require.NotEmpty(t, ref, "Request body schema should be a reference")
+	require.True(t, strings.HasPrefix(ref, "#/components/schemas/"),
 		"Request body reference should point to Components")
 
 	// Verify response body is a reference

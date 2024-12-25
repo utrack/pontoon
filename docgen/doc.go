@@ -2,47 +2,12 @@
 package docgen
 
 import (
-	"crypto/sha256"
-	"fmt"
-	"strings"
 )
 
-// DocID uniquely identifies a documentation entity in the codebase.
-type DocID struct {
-	PkgPath    string   // Full package import path
-	TypeName   string   // Type name (for services/structs)
-	MethodName string   // Method name (for handlers)
-	FieldPath  []string // Field path for nested structs
-	FilePath   string   // File path relative to module root
-	Line       int      // Line number in source
-}
-
-// Hash generates a stable hash for runtime lookup.
-func (id DocID) Hash() string {
-	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%s/%s.%s/%s:%d",
-		id.PkgPath,
-		id.TypeName,
-		id.MethodName,
-		strings.Join(id.FieldPath, "."),
-		id.Line,
-	)))
-	return fmt.Sprintf("%x", h.Sum(nil)[:8]) // First 8 bytes is enough
-}
-
-// DocComment represents a parsed documentation comment.
-type DocComment struct {
-	ID         string // Stable hash for runtime lookup
-	Path       string // Full path to the type/field
-	Comment    string // Raw comment text
-	SourceFile string // Source file path
-	Line       int    // Line number in source
-	Type       string // Comment type: "service", "handler", "struct", "field"
-	Identifier DocID  // Full identifier information
-}
 
 // FunctionDoc is some function's documentation.
 type FunctionDoc struct {
+	Package string
 	Name    string
 	Comment string
 	File    string
