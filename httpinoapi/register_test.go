@@ -8,7 +8,6 @@ import (
 )
 
 func TestGenerator_Operation(t *testing.T) {
-	type testHandler func(w http.ResponseWriter, r *http.Request)
 	handler := func(w http.ResponseWriter, r *http.Request) {}
 
 	cases := []struct {

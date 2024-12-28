@@ -120,6 +120,9 @@ func main() {
 					typesDocs = append(typesDocs, &v)
 				}
 			case *types.Signature:
+				if !*allFlag {
+					continue
+				}
 
 				fmt.Printf("%s:%d: found function %s\n",
 					p.Fset.Position(obj.Pos()).Filename,
