@@ -185,25 +185,27 @@ func mergeSchemaDoc(schema *base.Schema, docs *docgen.YAMLDoc, opts *mergeOption
 		return nil
 	}
 	for key, fieldSchemaReadOnly := range schema.Properties.FromNewest() {
+		if fieldSchemaReadOnly.IsReference() {
+			fmt.Printf("WARN: skipping field '%v' as it's a raw reference (not an allOf)\n",key)
+			continue
+		}
 		fieldSchema := fieldSchemaReadOnly.Schema()
 
 		if fieldSchema.Extensions == nil {
 			continue
 		}
 
-		// Get field name
 		fieldName, ok := ext.GetGoFieldName(fieldSchema.Extensions)
 		if !ok {
 			continue
 		}
 
-		// Find field documentation
+		// set up this field's doc based on the "go" types
 		field := findField(typeDoc, fieldName)
 		if field == nil {
 			continue
 		}
 
-		// Add field documentation
 		if field.Comment != "" && (!opts.preserveExisting || fieldSchema.Description == "") {
 			fieldSchema.Description = field.Comment
 		}

@@ -65,7 +65,6 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 		}
 
 		if reqSchema != nil {
-			fmt.Println("reqschema", reqSchema)
 			if !reqSchema.IsReference() && reqSchema.Schema().SchemaTypeRef != "" {
 				fmt.Println("ref")
 				reqSchema = base.CreateSchemaProxyRef(reqSchema.Schema().SchemaTypeRef)
