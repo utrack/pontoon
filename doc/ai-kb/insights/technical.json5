@@ -99,6 +99,26 @@
             "Anonymous structs are not supported yet",
             "Map types use additionalProperties instead of references for scalar values"
           ]
+        },
+        {
+          topic: "Field Name Resolution",
+          insight: "Field names are resolved from multiple tag sources",
+          discovered_at: "2024-12-28T12:20:55+01:00",
+          rules: [
+            "Body fields: json tag first, xml tag as fallback",
+            "Query/header fields: name from 'in' tag (e.g., query=page)",
+            "Default to struct field name if no tags present"
+          ],
+          example: `
+            type Request struct {
+              // Uses json tag
+              Name string \`json:"user_name"\`
+              // Uses in tag
+              Page int \`in:"query=page"\`
+              // Uses struct field name
+              Count int
+            }
+          `
         }
       ]
     }

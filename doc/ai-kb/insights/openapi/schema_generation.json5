@@ -88,6 +88,39 @@
           ]
         }
       ]
+    },
+    httpin_integration: {
+      insights: [
+        {
+          topic: "Field Parsing",
+          insight: "httpin fields are parsed differently based on location",
+          discovered_at: "2024-12-28T12:19:49+01:00",
+          rules: [
+            "Body fields use json/xml tags for naming",
+            "Query/header fields use 'in' tag with format 'location=name'",
+            "Validation tags (required,default,nonzero) are skipped during schema generation"
+          ],
+          example: `
+            type Request struct {
+              // Uses json tag
+              Name string \`json:"user_name"\`
+              
+              // Uses in tag
+              Page int \`in:"query=page"\`
+            }
+          `
+        },
+        {
+          topic: "Schema Generation Options",
+          insight: "Schema generation can be customized per-type",
+          discovered_at: "2024-12-28T12:19:49+01:00",
+          features: [
+            "Custom schema naming via SchemaNameFunc",
+            "Root schema reference control via WithRootAsReference",
+            "Body vs non-body context via WithInsideBody"
+          ]
+        }
+      ]
     }
   }
 }

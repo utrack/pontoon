@@ -50,11 +50,16 @@
       {
         name: "httpinoapi",
         purpose: "Handler registration and OpenAPI generation",
-        status: "in_development",
+        status: "active_development",
+        last_updated: "2024-12-28T12:20:55+01:00",
         key_components: [
           {
             name: "Generator",
             purpose: "Register handlers and generate OpenAPI specs"
+          },
+          {
+            name: "OperationBuilder",
+            purpose: "Build OpenAPI operation objects from handler metadata"
           }
         ]
       }
@@ -64,6 +69,12 @@
         name: "libopenapi",
         package: "github.com/pb33f/libopenapi",
         purpose: "OpenAPI 3.1 data model and utilities"
+      },
+      {
+        name: "httpin",
+        package: "github.com/ggicci/httpin",
+        purpose: "HTTP request parameter binding",
+        added_at: "2024-12-28T12:20:55+01:00"
       }
     ]
   },
