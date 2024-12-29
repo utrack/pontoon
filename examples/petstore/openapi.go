@@ -17,6 +17,17 @@ func RegisterHandlers(mux *http.ServeMux, store *Store) error {
 		httpinoapi.WithInputStruct(CreatePetRequest{}),
 		httpinoapi.WithOutputStruct(Pet{}),
 	)
+	mux.HandleFunc("/pets", store.CreatePet)
+
+	mux.HandleFunc("/pets/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			store.UpdatePet(w, r)
+		} else if r.Method == http.MethodGet {
+			store.ListPets(w, r)
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
 	gen.Operation(http.MethodPut,
 		"/pets/{id}",
 		store.UpdatePet,
@@ -42,16 +53,6 @@ func RegisterHandlers(mux *http.ServeMux, store *Store) error {
 	doc.Info.Description = "A simple pet store API demonstrating OpenAPI generation"
 
 	// Register handlers with mux
-	mux.HandleFunc("/pets", store.CreatePet)
-	mux.HandleFunc("/pets/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPut {
-			store.UpdatePet(w, r)
-		} else if r.Method == http.MethodGet {
-			store.ListPets(w, r)
-		} else {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-	})
 
 	mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		q.Q(doc.Paths)
