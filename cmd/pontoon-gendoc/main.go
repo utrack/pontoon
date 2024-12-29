@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"go/types"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/utrack/pontoon/docgen"
 	_ "github.com/utrack/pontoon/sdesc"
@@ -18,6 +16,7 @@ const descPkgName = "github.com/utrack/pontoon/sdesc"
 
 var (
 	allFlag = flag.Bool("all", false, "Generate documentation for all types in package, not just Service implementations")
+	outFile = flag.String("out", "", "Path to the package where the generated Go file will be written. If not specified, a file will be created for every package.")
 )
 
 func buildPkgMap(m map[string]*packages.Package, p *packages.Package) {
@@ -68,6 +67,12 @@ func main() {
 	allPkgs := make(map[string]*packages.Package)
 	for _, p := range pkgs {
 		buildPkgMap(allPkgs, p)
+	}
+
+	var dw docWriter = writerInPackages{}
+
+	if *outFile != "" {
+		dw = &writerSingleDest{outFile: *outFile}
 	}
 
 	for _, p := range pkgs {
@@ -143,24 +148,14 @@ func main() {
 			}
 		}
 
-		// Generate a single Go file in the package directory
-		// with docs for everything referenced by it
-		if len(typesDocs) > 0 {
-			pkgDir := filepath.Dir(p.CompiledGoFiles[0])
-			outFile := filepath.Join(pkgDir, "docs_gen.go")
-
-			tomlData, err := docgen.GenerateYAML(p.CompiledGoFiles, typesDocs,funcDocs)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			goData := docgen.GenerateGoFile(p.Name, tomlData)
-
-			err = os.WriteFile(outFile, goData, 0644)
-			if err != nil {
-				log.Fatal(err)
-			}
+		dw.Write(p.CompiledGoFiles, p.Name, typesDocs, funcDocs)
+		if err != nil {
+			log.Fatal(err)
 		}
+	}
+	err = dw.Flush()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
