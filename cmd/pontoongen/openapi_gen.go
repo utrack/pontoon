@@ -76,6 +76,9 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 			rsp = rsp.WithDescription("success")
 			rsp.Content = openapi3.NewContentWithJSONSchemaRef(out)
 			op.AddResponse(200, rsp)
+			for _, code := range h.inout.codes {
+				op.AddResponse(code, openapi3.NewResponse())
+			}
 			p.SetOperation(h.httpVerb, op)
 		}
 	}
