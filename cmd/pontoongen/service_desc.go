@@ -24,4 +24,5 @@ type hdlTypesDesc struct {
 	hasResponseWriter bool
 	outType           *typeDesc
 	description       string
+	codes             []int
 }

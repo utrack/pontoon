@@ -3,6 +3,8 @@ package main
 import (
 	"go/ast"
 	"go/types"
+	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/ast/astutil"
@@ -92,7 +94,7 @@ func (b builder) getHandleDesc(fnIdent *ast.Ident, ms *types.MethodSet) (*hdlTyp
 				fd.Name.Name != fnIdent.Name {
 				continue
 			}
-			ret.description = fd.Doc.Text()
+			ret.description, ret.codes = b.extractDescriptionAndCodes(fd.Doc)
 		}
 	}
 	return ret, nil
@@ -103,4 +105,30 @@ func (b *builder) rootStructDesc(t types.Type) (*typeDesc, error) {
 		t = p.Elem()
 	}
 	return b.getTypeDescCached(t)
+}
+
+func (b *builder) extractDescriptionAndCodes(comments *ast.CommentGroup) (string, []int) {
+	if comments == nil {
+		return "", nil
+	}
+
+	var codes []int
+	var newComments []*ast.Comment
+
+	for _, c := range comments.List {
+		line := strings.TrimSpace(strings.TrimPrefix(c.Text, "//"))
+		if strings.HasPrefix(line, "@Response") {
+			fields := strings.Fields(line)
+			for _, field := range fields[1:] {
+				if code, err := strconv.Atoi(field); err == nil && code != 200 {
+					codes = append(codes, code)
+				}
+			}
+			continue
+		}
+		newComments = append(newComments, c)
+	}
+
+	cleanGroup := &ast.CommentGroup{List: newComments}
+	return cleanGroup.Text(), codes
 }
