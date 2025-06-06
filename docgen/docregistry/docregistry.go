@@ -7,7 +7,7 @@ package docregistry
 import (
 	"reflect"
 
-	"github.com/utrack/pontoon/docgen"
+	"github.com/utrack/pontoon/v2/docgen"
 	"gopkg.in/yaml.v3"
 
 	"github.com/pkg/errors"
@@ -63,7 +63,7 @@ func parseYaml(in []byte) (*docgen.YAMLDoc, error) {
 func ForType(in any) (docgen.YAMLType, bool) {
 	t := reflect.TypeOf(in)
 	if t.PkgPath() == "" {
-		return docgen.YAMLType{},false
+		return docgen.YAMLType{}, false
 	}
 	v, ok := global.finalDoc.Types[t.PkgPath()+"."+t.Name()]
 	return v, ok

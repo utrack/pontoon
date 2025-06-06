@@ -8,8 +8,8 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/stretchr/testify/require"
-	"github.com/utrack/pontoon/docgen"
-	ext "github.com/utrack/pontoon/openapi/pontoonext"
+	"github.com/utrack/pontoon/v2/docgen"
+	ext "github.com/utrack/pontoon/v2/openapi/pontoonext"
 	"gopkg.in/yaml.v3"
 )
 

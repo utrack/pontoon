@@ -9,7 +9,7 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
-	oext "github.com/utrack/pontoon/openapi/pontoonext"
+	oext "github.com/utrack/pontoon/v2/openapi/pontoonext"
 	"gopkg.in/yaml.v3"
 )
 

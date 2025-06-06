@@ -6,7 +6,7 @@ import (
 
 	"github.com/ryboe/q"
 	"github.com/stretchr/testify/require"
-	"github.com/utrack/pontoon/httpinoapi"
+	"github.com/utrack/pontoon/v2/httpinoapi"
 )
 
 func TestPetStoreOpenAPI(t *testing.T) {

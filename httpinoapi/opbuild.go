@@ -9,8 +9,8 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
-	"github.com/utrack/pontoon/openapi/docmerge"
-	"github.com/utrack/pontoon/openapi/httpinmeditate"
+	"github.com/utrack/pontoon/v2/openapi/docmerge"
+	"github.com/utrack/pontoon/v2/openapi/httpinmeditate"
 )
 
 // buildOperation creates an OpenAPI operation from a handler.

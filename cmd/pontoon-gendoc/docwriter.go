@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/utrack/pontoon/docgen"
+	"github.com/utrack/pontoon/v2/docgen"
 )
 
 // docWriter describes a writer that saves the extracted documentation.

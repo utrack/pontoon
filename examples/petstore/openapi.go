@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ryboe/q"
-	"github.com/utrack/pontoon/httpinoapi"
+	"github.com/utrack/pontoon/v2/httpinoapi"
 )
 
 // RegisterHandlers registers the pet store handlers with OpenAPI generation

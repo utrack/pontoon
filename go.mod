@@ -1,4 +1,4 @@
-module github.com/utrack/pontoon
+module github.com/utrack/pontoon/v2
 
 go 1.23.0
 
@@ -14,6 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/ryboe/q v1.0.23
 	github.com/stretchr/testify v1.10.0
+	github.com/utrack/pontoon v0.4.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 

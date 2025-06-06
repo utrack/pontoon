@@ -7,8 +7,8 @@ import (
 	"go/types"
 	"log"
 
-	"github.com/utrack/pontoon/docgen"
 	_ "github.com/utrack/pontoon/sdesc"
+	"github.com/utrack/pontoon/v2/docgen"
 	"golang.org/x/tools/go/packages"
 )
 

@@ -7,9 +7,9 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
-	"github.com/utrack/pontoon/docgen"
-	"github.com/utrack/pontoon/docgen/docregistry"
-	ext "github.com/utrack/pontoon/openapi/pontoonext"
+	"github.com/utrack/pontoon/v2/docgen"
+	"github.com/utrack/pontoon/v2/docgen/docregistry"
+	ext "github.com/utrack/pontoon/v2/openapi/pontoonext"
 )
 
 // mergeOptions configures the merge behavior
@@ -186,7 +186,7 @@ func mergeSchemaDoc(schema *base.Schema, docs *docgen.YAMLDoc, opts *mergeOption
 	}
 	for key, fieldSchemaReadOnly := range schema.Properties.FromNewest() {
 		if fieldSchemaReadOnly.IsReference() {
-			fmt.Printf("WARN: skipping field '%v' as it's a raw reference (not an allOf)\n",key)
+			fmt.Printf("WARN: skipping field '%v' as it's a raw reference (not an allOf)\n", key)
 			continue
 		}
 		fieldSchema := fieldSchemaReadOnly.Schema()
@@ -233,7 +233,7 @@ func findType(docs *docgen.YAMLDoc, pkgPath, typeName string) *docgen.YAMLType {
 	if docs == nil {
 		return nil
 	}
-	v,ok := docs.Types[pkgPath+"."+typeName]
+	v, ok := docs.Types[pkgPath+"."+typeName]
 	if !ok {
 		return nil
 	}

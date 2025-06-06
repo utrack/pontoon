@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/utrack/pontoon/examples/petstore"
+	"github.com/utrack/pontoon/v2/examples/petstore"
 )
 
 func main() {
