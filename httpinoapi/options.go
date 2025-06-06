@@ -18,10 +18,24 @@ func WithTags(tags ...string) Option {
 	}
 }
 
+// WithInputType specifies the input type for request parameters
+func WithInputType(inputType reflect.Type) Option {
+	return func(o *options) {
+		o.inputType = inputType
+	}
+}
+
 // WithInputStruct specifies the input struct for request parameters
 func WithInputStruct(inputStruct any) Option {
 	return func(o *options) {
 		o.inputType = reflect.TypeOf(inputStruct)
+	}
+}
+
+// WithOutputType specifies the output type for responses
+func WithOutputType(outputType reflect.Type) Option {
+	return func(o *options) {
+		o.outputType = outputType
 	}
 }
 
