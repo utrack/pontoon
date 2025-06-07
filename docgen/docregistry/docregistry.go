@@ -6,6 +6,8 @@ package docregistry
 
 import (
 	"reflect"
+	"runtime"
+	"strings"
 
 	"github.com/utrack/pontoon/v2/docgen"
 	"gopkg.in/yaml.v3"
@@ -19,8 +21,9 @@ type registry struct {
 
 func newRegistry() *registry {
 	return &registry{finalDoc: &docgen.YAMLDoc{
-		Checksum: "no-global-checksum",
-		Types:    make(map[string]docgen.YAMLType),
+		Checksum:  "no-global-checksum",
+		Types:     make(map[string]docgen.YAMLType),
+		Functions: make(map[string]docgen.YAMLMethod),
 	}}
 }
 
@@ -50,6 +53,14 @@ func (r *registry) registerYaml(yaml string) error {
 		r.finalDoc.Types[k] = v
 	}
 
+	for k, v := range doc.Functions {
+		if _, ok := r.finalDoc.Functions[k]; ok {
+			// TODO deep compare and error when not equal
+			return errors.Errorf("function '%v' already registered", k)
+		}
+		r.finalDoc.Functions[k] = v
+	}
+
 	return nil
 }
 
@@ -60,12 +71,41 @@ func parseYaml(in []byte) (*docgen.YAMLDoc, error) {
 	return &ret, err
 }
 
-func ForType(in any) (docgen.YAMLType, bool) {
-	t := reflect.TypeOf(in)
-	if t.PkgPath() == "" {
+func For(in any) (docgen.YAMLType, bool) {
+	return ForType(reflect.TypeOf(in))
+}
+
+func ForType(in reflect.Type) (docgen.YAMLType, bool) {
+	if in.PkgPath() == "" {
 		return docgen.YAMLType{}, false
 	}
-	v, ok := global.finalDoc.Types[t.PkgPath()+"."+t.Name()]
+	v, ok := global.finalDoc.Types[in.PkgPath()+"."+in.Name()]
+	return v, ok
+}
+
+func ForMethod(method reflect.Value) (docgen.YAMLMethod, bool) {
+
+	name := runtime.FuncForPC(method.Pointer()).Name()
+	name = strings.TrimSuffix(name, "-fm")
+
+	if name == "" {
+		return docgen.YAMLMethod{}, false
+	}
+	lookup := name
+	// try looking up func on a method if it looks like it
+	if strings.Count(lookup, ".") > 1 {
+		lastDotIdx := strings.LastIndex(lookup, ".")
+		typeName := lookup[:lastDotIdx]
+		funcName := lookup[lastDotIdx+1:]
+
+		if t, ok := global.finalDoc.Types[typeName]; ok {
+			m, ok := t.Methods[funcName]
+			if ok {
+				return m, true
+			}
+		}
+	}
+	v, ok := global.finalDoc.Functions[lookup]
 	return v, ok
 }
 

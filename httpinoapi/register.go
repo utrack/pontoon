@@ -18,7 +18,7 @@ type Generator struct {
 type handlerInfo struct {
 	verb    string
 	path    string
-	handler interface{}
+	handler reflect.Value
 	options *options
 }
 
@@ -55,7 +55,7 @@ func (g *Generator) Operation(verb string, path string, handler interface{}, opt
 	g.handlers = append(g.handlers, &handlerInfo{
 		verb:    verb,
 		path:    path,
-		handler: handler,
+		handler: reflect.ValueOf(handler),
 		options: options,
 	})
 

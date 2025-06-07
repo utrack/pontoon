@@ -9,6 +9,7 @@ import (
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
 	"github.com/pb33f/libopenapi/orderedmap"
 	"github.com/pkg/errors"
+	"github.com/utrack/pontoon/v2/docgen/docregistry"
 	"github.com/utrack/pontoon/v2/openapi/docmerge"
 	"github.com/utrack/pontoon/v2/openapi/httpinmeditate"
 )
@@ -18,6 +19,10 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 	op := &v3.Operation{
 		Tags: h.options.tags,
 	}
+
+	funcDesc, _ := docregistry.ForMethod(h.handler)
+
+	op.Description = funcDesc.Comment
 
 	oapigen := httpinmeditate.NewGenerator()
 
@@ -53,7 +58,6 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 				Type:       []string{"object"},
 				Properties: orderedmap.New[string, *base.SchemaProxy](),
 			}
-			fmt.Println("formparams", formParams)
 			for _, p := range formParams {
 				p.In = ""
 				formSchema.Properties.Set(p.Name, p.Schema)
@@ -66,7 +70,6 @@ func (g *Generator) buildOperation(h *handlerInfo) (*v3.Operation, error) {
 
 		if reqSchema != nil {
 			if !reqSchema.IsReference() && reqSchema.Schema().SchemaTypeRef != "" {
-				fmt.Println("ref")
 				reqSchema = base.CreateSchemaProxyRef(reqSchema.Schema().SchemaTypeRef)
 			}
 

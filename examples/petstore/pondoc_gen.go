@@ -10,7 +10,7 @@ func init() {
 	docregistry.MustRegister(docYAML)
 }
 
-const docYAML = `checksum: 29d49b0d081932ba6fabbe5ebde570288431d325d3582861fe3bf02a8f58bc45
+const docYAML = `checksum: 163052e2d9c912eee7240de2ff5a238681157c1a05adf9ec4995e1a31c875c48
 types:
   github.com/utrack/pontoon/v2/examples/petstore.Category:
     id: ""
