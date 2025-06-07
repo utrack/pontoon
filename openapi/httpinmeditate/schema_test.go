@@ -2,7 +2,6 @@ package httpinmeditate
 
 import (
 	"encoding"
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -154,7 +153,7 @@ func TestGenerator_GenerateSchema(t *testing.T) {
 
 	// Check Address schema
 	addrReference := doc.AllOf[0].GetReference()
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Address", addrReference)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.Address", addrReference)
 
 	// Check regular fields
 	regularSchema := doc.AllOf[1].Schema()
@@ -164,7 +163,6 @@ func TestGenerator_GenerateSchema(t *testing.T) {
 
 	// Check ID field
 	idSchema := props.GetOrZero("id").Schema()
-	fmt.Println(idSchema)
 	assert.Equal(t, []string{"integer"}, idSchema.Type)
 
 	// Check Name field (nullable)
@@ -259,7 +257,7 @@ func TestGenerator_GenerateSchema_ComplexTypes_SlicePtr(t *testing.T) {
 	require.NotNil(t, props)
 
 	// Test basic types
-	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
 }
 
 func TestGenerator_GenerateSchema_ComplexTypes_StructMap(t *testing.T) {
@@ -275,7 +273,7 @@ func TestGenerator_GenerateSchema_ComplexTypes_StructMap(t *testing.T) {
 	props := doc.Properties
 	require.NotNil(t, props)
 
-	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
 }
 
 func TestGenerator_GenerateSchema_ComplexTypes(t *testing.T) {
@@ -318,13 +316,13 @@ func TestGenerator_GenerateSchema_ComplexTypes(t *testing.T) {
 	// Test maps
 	assertMapValueType(t, props, "string_map", "string")
 	assertMapValueType(t, props, "int_map", "integer")
-	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertMapRefType(t, props, "struct_map", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
 
 	// Test nested structs
-	assertRefType(t, props, "nested", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
-	assertNullableRefType(t, props, "nested_ptr", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
-	assertArrayRefType(t, props, "nested_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
-	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA")
+	assertRefType(t, props, "nested", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
+	assertNullableRefType(t, props, "nested_ptr", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
+	assertArrayRefType(t, props, "nested_slice", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
+	assertArrayNullableRefType(t, props, "nested_ptr_slice", "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA")
 
 	// Test time types
 	assertSchemaType(t, props, "time", "string", "date-time")
@@ -355,9 +353,8 @@ func TestGenerator_GeneratableSpec(t *testing.T) {
 			Schemas: comps,
 		},
 	}
-	rend, err := doc.Render()
+	_, err = doc.Render()
 	require.Nil(t, err)
-	fmt.Print(string(rend))
 
 }
 
@@ -382,12 +379,12 @@ func TestGenerator_GenerateSchema_Recursive(t *testing.T) {
 	require.NotNil(t, parentSchema.OneOf)
 	require.Len(t, parentSchema.OneOf, 2)
 	assert.Equal(t, []string{"null"}, parentSchema.OneOf[0].Schema().Type)
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", parentSchema.OneOf[1].Schema().AllOf[0].GetReference())
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.Node", parentSchema.OneOf[1].Schema().AllOf[0].GetReference())
 
 	// Check Children field (recursive slice)
 	childrenSchema := props.GetOrZero("children").Schema()
 	assert.Equal(t, []string{"array"}, childrenSchema.Type)
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.Node", childrenSchema.Items.A.Schema().AllOf[0].GetReference())
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.Node", childrenSchema.Items.A.Schema().AllOf[0].GetReference())
 }
 
 func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
@@ -404,13 +401,13 @@ func TestGenerator_GenerateSchema_MultipleEmbedded(t *testing.T) {
 
 	// Check BaseA fields
 	baseARef := doc.AllOf[0].GetReference()
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseA", baseARef)
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseA", baseARef)
 
 	// Check BaseB fields (pointer)
 	baseBPtrSchema := doc.AllOf[1].Schema()
 	require.Len(t, baseBPtrSchema.OneOf, 2)
 	assert.Equal(t, []string{"null"}, baseBPtrSchema.OneOf[0].Schema().Type)
-	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_openapi_httpinmeditate.BaseB", baseBPtrSchema.OneOf[1].GetReference())
+	assert.Equal(t, "#/components/schemas/github.com_utrack_pontoon_v2_openapi_httpinmeditate.BaseB", baseBPtrSchema.OneOf[1].GetReference())
 
 	// Check own fields
 	ownSchema := doc.AllOf[2].Schema()
@@ -490,7 +487,7 @@ func TestGenerator_GenerateSchema_JSONTags(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "json", jsonField.Schema().Extensions.GetOrZero("x-httpin-body").Value)
 
-	ref := "github.com_utrack_pontoon_openapi_httpinmeditate.StructWithJSONField"
+	ref := "github.com_utrack_pontoon_v2_openapi_httpinmeditate.StructWithJSONField"
 	refString := "#/components/schemas/" + ref
 
 	// workaround for OAPI 3.0-style embeddings
@@ -540,9 +537,8 @@ func TestGenerator_GenerateOperationModel(t *testing.T) {
 		},
 		Components: g.Components(),
 	}
-	rend, err := doc.Render()
+	_, err = doc.Render()
 	require.Nil(t, err)
-	fmt.Print(string(rend))
 	// Check parameters
 	require.Len(t, params, 6, "should include all parameters including nested structs")
 
@@ -601,7 +597,6 @@ func assertNullableType(t *testing.T, props *orderedmap.Map[string, *base.Schema
 }
 
 func assertArrayType(t *testing.T, props *orderedmap.Map[string, *base.SchemaProxy], field string, itemType string, format ...string) {
-	fmt.Printf("assertArrayType: checking field %q (expected item type: %q, format: %v)\n", field, itemType, format)
 	schema := props.GetOrZero(field).Schema()
 	assert.Equal(t, []string{"array"}, schema.Type)
 	itemSchema := schema.Items.A.Schema()
@@ -627,7 +622,6 @@ func assertMapRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaPr
 }
 
 func assertRefType(t *testing.T, props *orderedmap.Map[string, *base.SchemaProxy], field string, ref string) {
-	fmt.Println(field)
 	prop := props.GetOrZero(field)
 	require.NotNil(t, prop)
 	refSchema := props.GetOrZero(field).Schema().AllOf[0].GetReference()

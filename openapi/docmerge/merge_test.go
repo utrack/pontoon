@@ -1,7 +1,6 @@
 package docmerge
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/pb33f/libopenapi/datamodel/high/base"
@@ -415,14 +414,11 @@ func TestMerge(t *testing.T) {
 			require.NoError(t, err)
 			gotBytes, err := yaml.Marshal(gotYaml)
 			require.NoError(t, err)
-			fmt.Println(string(gotBytes))
 
 			wantYaml, err := tt.want.MarshalYAML()
 			require.NoError(t, err)
 			wantBytes, err := yaml.Marshal(wantYaml)
 			require.NoError(t, err)
-
-			fmt.Println(string(wantBytes))
 
 			require.EqualValues(t, string(wantBytes), string(gotBytes))
 		})

@@ -90,21 +90,21 @@ func TestPetStoreOpenAPI(t *testing.T) {
 
 	// Verify Pet schema
 	q.Q(doc.Components.Schemas)
-	petSchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_examples_petstore.Pet")
+	petSchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_v2_examples_petstore.Pet")
 	require.True(t, exists)
 	require.NotNil(t, petSchema)
 	require.Equal(t, []string{"object"}, petSchema.Schema().Type)
 	require.NotNil(t, petSchema.Schema().Properties)
 
 	// Verify Category schema
-	categorySchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_examples_petstore.Category")
+	categorySchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_v2_examples_petstore.Category")
 	require.True(t, exists)
 	require.NotNil(t, categorySchema)
 	require.Equal(t, []string{"object"}, categorySchema.Schema().Type)
 	require.NotNil(t, categorySchema.Schema().Properties)
 
 	// Verify Tag schema
-	tagSchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_examples_petstore.Tag")
+	tagSchema, exists := doc.Components.Schemas.Get("github.com_utrack_pontoon_v2_examples_petstore.Tag")
 	require.True(t, exists)
 	require.NotNil(t, tagSchema)
 	require.Equal(t, []string{"object"}, tagSchema.Schema().Type)
