@@ -139,10 +139,10 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 		// Get comments
 		var comments []string
 		if genDecl != nil && genDecl.Doc != nil {
-			comments = append(comments, genDecl.Doc.Text())
+			comments = append(comments, docFromComment(typeDoc.Name, "", genDecl.Doc.Text()))
 		}
 		if typeSpec.Doc != nil {
-			comments = append(comments, typeSpec.Doc.Text())
+			comments = append(comments, docFromComment(typeDoc.Name, "", typeSpec.Doc.Text()))
 		}
 		if len(comments) > 0 {
 			typeDoc.Comment = strings.Join(comments, "\n")
@@ -231,7 +231,7 @@ func (e *Extractor) extractType(typeDocs map[string]TypeDoc, t types.Type) error
 
 				if fieldNode != nil {
 					if fieldNode.Doc != nil {
-						fieldDoc.Comment = fieldNode.Doc.Text()
+						fieldDoc.Comment = docFromComment(fieldDoc.Name, "", fieldNode.Doc.Text())
 					}
 					if fieldNode.Tag != nil {
 						tv := fieldNode.Tag.Value
@@ -325,24 +325,26 @@ func (e *Extractor) extractFunction(f *ast.File, fun *types.Func) (*FunctionDoc,
 		return nil, nil
 	}
 
+	doc := &FunctionDoc{
+		Package: fun.Pkg().Path(),
+		Name:    fun.Name(),
+		//Comment: funcComment,
+		File: funcPos.Filename,
+		Line: funcPos.Line,
+	}
+
 	// Get method documentation
 	var funcComment string
 	for _, node := range funcPath {
 		if fd, ok := node.(*ast.FuncDecl); ok {
 			if fd.Doc != nil {
-				funcComment = fd.Doc.Text()
+				funcComment = docFromComment(doc.Package+"."+doc.Name, "", fd.Doc.Text())
 			}
 			break
 		}
 	}
 
-	doc := &FunctionDoc{
-		Package: fun.Pkg().Path(),
-		Name:    fun.Name(),
-		Comment: funcComment,
-		File:    funcPos.Filename,
-		Line:    funcPos.Line,
-	}
+	doc.Comment = funcComment
 
 	for i := 0; i < sig.Params().Len(); i++ {
 		var inputType types.Type

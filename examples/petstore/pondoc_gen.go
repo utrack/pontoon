@@ -18,18 +18,15 @@ types:
     name: Category
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 21
-    comment: |
-      Category represents a pet category
+    comment: Represents a pet category
     fields:
       - name: ID
         type: int64
-        comment: |
-          ID is a unique category ID.
+        comment: A unique category ID.
         tags: json:"id"
       - name: Name
         type: string
-        comment: |
-          Name is the category name; non-unique.
+        comment: The category name; non-unique.
         tags: json:"name"
       - name: Cover
         type: github.com/ggicci/httpin.File
@@ -42,13 +39,11 @@ types:
     name: CreatePetRequest
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 45
-    comment: |
-      CreatePetRequest represents a request to create a new pet
+    comment: Represents a request to create a new pet
     fields:
       - name: Pet
         type: github.com/utrack/pontoon/v2/examples/petstore.CreatePetRequestPet
-        comment: |
-          Pet is the pet's details
+        comment: The pet's details
         tags: in:"body=json"
     is_struct: true
   github.com/utrack/pontoon/v2/examples/petstore.CreatePetRequestPet:
@@ -60,27 +55,25 @@ types:
     fields:
       - name: Name
         type: string
-        comment: |
-          Name is the pet's name.
+        comment: The pet's name.
         tags: json:"name"
       - name: Category
         type: github.com/utrack/pontoon/v2/examples/petstore.Category
-        comment: |
-          Category is this pet's category.
+        comment: |-
+          This pet's category.
 
           A new category is created if it's not found by ID.
         tags: json:"category"
       - name: Tags
         type: '[]github.com/utrack/pontoon/v2/examples/petstore.Tag'
-        comment: |
-          Tags are the freeform tags of this pet.
+        comment: Are the freeform tags of this pet.
         tags: json:"tags"
         is_array:
           type: github.com/utrack/pontoon/v2/examples/petstore.Tag
       - name: Status
         type: github.com/utrack/pontoon/v2/examples/petstore.Status
-        comment: |
-          Status is this pet's status in the store.
+        comment: |-
+          This pet's status in the store.
 
           docgen: enum
         tags: json:"status"
@@ -91,8 +84,7 @@ types:
     name: ErrorResponse
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 91
-    comment: |
-      ErrorResponse represents an error response
+    comment: Represents an error response
     fields:
       - name: Code
         type: int
@@ -110,13 +102,11 @@ types:
     name: ListPetsRequest
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 73
-    comment: |
-      ListPetsRequest represents a request to list pets
+    comment: Represents a request to list pets
     fields:
       - name: Page
         type: int
-        comment: |
-          Page is yadda yadda
+        comment: Yadda yadda
         tags: in:"query=page"
       - name: PerPage
         type: int
@@ -139,8 +129,7 @@ types:
     name: ListPetsResponse
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 83
-    comment: |
-      ListPetsResponse represents a response containing a list of pets
+    comment: Represents a response containing a list of pets
     fields:
       - name: Items
         type: '[]github.com/utrack/pontoon/v2/examples/petstore.Pet'
@@ -163,8 +152,7 @@ types:
     name: Pet
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 10
-    comment: |
-      Pet represents a pet in the store
+    comment: Represents a pet in the store
     fields:
       - name: ID
         type: int64
@@ -196,8 +184,7 @@ types:
     name: Status
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 36
-    comment: |
-      Status represents a pet's status in the store
+    comment: Represents a pet's status in the store
     is_struct: false
   github.com/utrack/pontoon/v2/examples/petstore.Store:
     id: ""
@@ -205,8 +192,7 @@ types:
     name: Store
     file: /home/u/spaces/ghown/pontoon/examples/petstore/handlers.go
     line: 13
-    comment: |
-      Store is a simple in-memory pet store
+    comment: A simple in-memory pet store
     fields:
       - name: pets
         type: map[int64]github.com/utrack/pontoon/v2/examples/petstore.Pet
@@ -217,22 +203,19 @@ types:
         type: int64
     methods:
       CreatePet:
-        comment: |
-          CreatePet creates a new pet
+        comment: Creates a new pet
         file: /home/u/spaces/ghown/pontoon/examples/petstore/handlers.go
         line: 26
         inputs: []
         outputs: []
       ListPets:
-        comment: |
-          ListPets lists all pets matching the given criteria
+        comment: Lists all pets matching the given criteria
         file: /home/u/spaces/ghown/pontoon/examples/petstore/handlers.go
         line: 79
         inputs: []
         outputs: []
       UpdatePet:
-        comment: |
-          UpdatePet updates an existing pet
+        comment: Updates an existing pet
         file: /home/u/spaces/ghown/pontoon/examples/petstore/handlers.go
         line: 53
         inputs: []
@@ -244,8 +227,7 @@ types:
     name: Tag
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 30
-    comment: |
-      Tag represents a pet tag
+    comment: Represents a pet tag
     fields:
       - name: ID
         type: int64
@@ -260,16 +242,14 @@ types:
     name: UpdatePetRequest
     file: /home/u/spaces/ghown/pontoon/examples/petstore/types.go
     line: 66
-    comment: |
-      UpdatePetRequest represents a request to update a pet
+    comment: Represents a request to update a pet
     fields:
       - name: ID
         type: int64
         tags: in:"path=id"
       - name: Pet
         type: github.com/utrack/pontoon/v2/examples/petstore.CreatePetRequestPet
-        comment: |
-          Pet is the new model of this pet.
+        comment: The new model of this pet.
         tags: in:"body=json"
     is_struct: true
   net/http.Request:
@@ -295,8 +275,7 @@ types:
     is_struct: false
 functions:
   github.com/utrack/pontoon/v2/examples/petstore.NewStore:
-    comment: |
-      NewStore creates a new pet store
+    comment: Creates a new pet store
     file: /home/u/spaces/ghown/pontoon/examples/petstore/handlers.go
     line: 19
     inputs: []
@@ -304,8 +283,7 @@ functions:
       - name: ""
         type: github.com/utrack/pontoon/v2/examples/petstore.Store
   github.com/utrack/pontoon/v2/examples/petstore.RegisterHandlers:
-    comment: |
-      RegisterHandlers registers the pet store handlers with OpenAPI generation
+    comment: Registers the pet store handlers with OpenAPI generation
     file: /home/u/spaces/ghown/pontoon/examples/petstore/openapi.go
     line: 11
     inputs:
