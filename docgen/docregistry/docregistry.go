@@ -47,16 +47,18 @@ func (r *registry) registerYaml(yaml string) error {
 
 	for k, v := range doc.Types {
 		if _, ok := r.finalDoc.Types[k]; ok {
-			// TODO deep compare and error when not equal
-			return errors.Errorf("type '%v' already registered", k)
+			if !reflect.DeepEqual(v, r.finalDoc.Types[k]) {
+				return errors.Errorf("type '%v' already registered with different content", k)
+			}
 		}
 		r.finalDoc.Types[k] = v
 	}
 
 	for k, v := range doc.Functions {
 		if _, ok := r.finalDoc.Functions[k]; ok {
-			// TODO deep compare and error when not equal
-			return errors.Errorf("function '%v' already registered", k)
+			if !reflect.DeepEqual(v, r.finalDoc.Functions[k]) {
+				return errors.Errorf("function '%v' already registered with different content", k)
+			}
 		}
 		r.finalDoc.Functions[k] = v
 	}
