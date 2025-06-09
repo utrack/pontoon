@@ -36,5 +36,8 @@ func docFromComment(goName string, jsonTag string, comment string) string {
 		r[0] = unicode.ToUpper(r[0])
 		comment = string(r)
 	}
+
+	// markdown-ify newlines
+	comment = strings.ReplaceAll(comment, "\n", "  \n")
 	return comment
 }
