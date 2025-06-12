@@ -72,7 +72,7 @@ func (g *Generator) SchemaRef(t reflect.Type) (*base.SchemaProxy, error) {
 }
 
 var (
-	httpinFile = reflect.TypeFor[core.FileHeader]()
+	httpinFile = reflect.TypeFor[*core.File]()
 )
 
 // GenerateSchema generates an OpenAPI 3.1 Component Schema for the given type
@@ -95,7 +95,9 @@ func (g *Generator) generateSchema(t reflect.Type, oo ...Option) (*base.SchemaPr
 		}
 
 		if opts.rootRef {
-			innerSchema = base.CreateSchemaProxyRef(innerSchema.Schema().SchemaTypeRef)
+			if !innerSchema.IsReference() {
+				innerSchema = base.CreateSchemaProxyRef(innerSchema.Schema().SchemaTypeRef)
+			}
 		}
 
 		return base.CreateSchemaProxy(&base.Schema{
@@ -252,7 +254,12 @@ func (g *Generator) generateFieldSchema(field *fieldInfo) (*base.SchemaProxy, er
 		})
 	}
 
-	if fieldType.Implements(httpinFile) {
+	if fieldType == httpinFile {
+		extensions.Set("x-pontoon-go-type", &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Tag:   "!!str",
+			Value: "httpincore.File",
+		})
 		extensions.Set("x-pontoon-form-type", &yaml.Node{
 			Kind:  yaml.ScalarNode,
 			Tag:   "!!str",
