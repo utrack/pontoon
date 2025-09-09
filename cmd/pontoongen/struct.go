@@ -24,7 +24,6 @@ func (b *builder) getTypeDescCached(tt types.Type) (*typeDesc, error) {
 }
 
 func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
-
 	switch t := tt.(type) {
 	case *types.Basic:
 		return &typeDesc{isScalar: true, id: t.Name(), typeName: t.Name()}, nil
@@ -42,6 +41,8 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 				t: ut,
 			},
 		}, nil
+	case *types.Alias:
+		return b.getTypeDescCached(t.Rhs())
 	case *types.Map:
 		key, err := b.getTypeDescCached(t.Key())
 		if err != nil {
@@ -57,7 +58,8 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 			isMap: &descMap{
 				key:   key,
 				value: value,
-			}}, nil
+			},
+		}, nil
 	case *types.Pointer:
 		ut, err := b.getTypeDescCached(t.Elem())
 		if err != nil {
@@ -169,11 +171,11 @@ func (b *builder) getStructDocs(pos token.Pos, name string) (*structDoc, error) 
 	if err != nil {
 		return &structDoc{}, nil
 		// TODO load files from imported packages for comments
-		//return nil, errors.Wrap(err, "astFindFile failed")
+		// return nil, errors.Wrap(err, "astFindFile failed")
 	}
 	reg, _ := astutil.PathEnclosingInterval(f, pos-1, pos)
 
-	//find the 'type' in type Foo struct
+	// find the 'type' in type Foo struct
 	// it can have more than one type if it's type (A B C) syntax
 	anode := reg[0].(*ast.GenDecl)
 

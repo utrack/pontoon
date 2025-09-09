@@ -1,6 +1,6 @@
 module github.com/utrack/pontoon
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/getkin/kin-openapi v0.80.0
@@ -20,5 +20,6 @@ require (
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	golang.org/x/mod v0.27.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
