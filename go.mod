@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/getkin/kin-openapi v0.80.0
+	github.com/ggicci/httpin v0.20.3
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/pkg/errors v0.9.1
@@ -15,11 +16,12 @@ require (
 )
 
 require (
+	github.com/ggicci/owl v0.8.2 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect

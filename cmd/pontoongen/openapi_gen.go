@@ -22,7 +22,6 @@ const (
 )
 
 func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
-
 	paths := openapi3.Paths{}
 
 	tags := []*openapi3.Tag{}
@@ -101,7 +100,7 @@ func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
 	root.Paths = paths
 	root.Tags = tags
 
-	//err := root.Validate(context.Background())
+	// err := root.Validate(context.Background())
 	ret, err := json.MarshalIndent(&root, "  ", "  ")
 	if err != nil {
 		panic(fmt.Sprintf("error marshalling openapi spec: %s", err))
@@ -209,8 +208,11 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 			if f.t.isPtr != nil {
 				t = f.t.isPtr
 			}
-			if t.isSpecial != specialTypeFile {
-				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v', type '%v'", f.name, f.t.typeName)
+
+			isSliceOfFiles := t.isSlice != nil && t.isSlice.t.isPtr != nil && t.isSlice.t.isPtr.isSpecial == specialTypeFile
+			if t.isSpecial != specialTypeFile &&
+				!isSliceOfFiles {
+				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v', type '%v'. Files should be either *core.File or []*core.File", f.name, f.t.typeName)
 			}
 
 			// TODO this generates ONLY multipart/form-data!
@@ -252,7 +254,6 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 }
 
 func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
-
 	if f.t.isScalar {
 		ret, err := genRefFieldScalar(f.t)
 		if err != nil {
@@ -554,7 +555,6 @@ func genRefFieldSpecial(t *typeDesc) (*openapi3.SchemaRef, error) {
 }
 
 func docFromComment(goLongName string, jsonTag string, comment string) string {
-
 	goName := goLongName
 	// foo.Bar -> Bar
 	if idx := strings.LastIndex(goLongName, "."); idx > -1 {

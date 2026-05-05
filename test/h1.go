@@ -3,6 +3,7 @@ package test
 import (
 	"net/http"
 
+	"github.com/ggicci/httpin/core"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/sdesc"
@@ -70,9 +71,25 @@ type dummyStruct struct {
 
 var _ sdesc.Service = &Handler{}
 
+type fileInput struct {
+	File *core.File `in:"form=file"`
+}
+
+type fileManyInput struct {
+	Files []*core.File `in:"form=file"`
+}
+
 // IterateProducts comment
 // Includes imported package
 func (h Handler) iterateProducts(r *http.Request, req iterateRequest) (*test2.IterateResponse, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) fileInput(r *http.Request, req fileInput) (interface{}, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) fileManyInput(r *http.Request, req fileManyInput) (interface{}, error) {
 	return nil, errors.New("NIH")
 }
 

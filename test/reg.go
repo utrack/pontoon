@@ -23,4 +23,7 @@ func (h Handler) RegisterHTTP(mux sdesc.HTTPRouter) {
 	mux.MethodFunc(http.MethodGet, "/v1/test/return/map", h.mapReturn)
 
 	mux.MethodFunc(http.MethodGet, "/v1/test/request/jsonWithDirective", h.jsonWithDirs)
+
+	mux.MethodFunc(http.MethodPost, "/v1/test/request/file", h.fileInput)
+	mux.MethodFunc(http.MethodPost, "/v1/test/request/file-many", h.fileManyInput)
 }

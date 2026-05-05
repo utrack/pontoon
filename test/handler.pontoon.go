@@ -410,6 +410,96 @@ func (s Handler) OpenAPI() string {
           ]
         }
       },
+      "/v1/test/request/file": {
+        "post": {
+          "operationId": "v1_test_request_file_post",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "properties": {
+                    "file": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "format": "binary",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/request/file-many": {
+        "post": {
+          "operationId": "v1_test_request_file-many_post",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "properties": {
+                    "file": {
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "format": "binary",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
       "/v1/test/request/jsonWithDirective": {
         "get": {
           "operationId": "v1_test_request_jsonwithdirective_get",
