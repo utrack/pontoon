@@ -24,6 +24,9 @@ func (b *builder) getTypeDescCached(tt types.Type) (*typeDesc, error) {
 }
 
 func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
+	if tt.String() == "github.com/google/uuid.UUID" {
+		return &typeDesc{isScalar: true, id: "string", typeName: "string"}, nil
+	}
 	switch t := tt.(type) {
 	case *types.Basic:
 		return &typeDesc{isScalar: true, id: t.Name(), typeName: t.Name()}, nil

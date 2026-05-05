@@ -3,14 +3,14 @@ package test
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/utrack/pontoon/sdesc"
 	"github.com/utrack/pontoon/test2"
 )
 
 // Handler struct comment
-type Handler struct {
-}
+type Handler struct{}
 
 // Request comment
 // Request line 2
@@ -29,6 +29,7 @@ type iterateRequest struct {
 	Maps map[string]mapped `faa:"faw"`
 
 	Recursive *iterateRequest `in:"body=json"`
+	UUID      uuid.UUID       `in:"query=uuid"`
 }
 
 type mapped struct{}
@@ -43,7 +44,7 @@ type iterateEmbedded struct {
 
 // nonAnnotJSON represents a 'raw' JSON struct without annotations with an embed no-annotated one
 type nonAnnotJSON struct {
-	//TODO *nonAnnotJSON blows up the stack
+	// TODO *nonAnnotJSON blows up the stack
 	nonAnnotJSON2
 	Foo string `json:"foo"`
 }

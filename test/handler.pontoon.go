@@ -163,6 +163,13 @@ func (s Handler) OpenAPI() string {
                 "default": "foobarbaz",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -238,6 +245,13 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "default": "foobarbaz",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
                 "type": "string"
               }
             }
@@ -317,6 +331,13 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "default": "foobarbaz",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
                 "type": "string"
               }
             }
@@ -457,6 +478,13 @@ func (s Handler) OpenAPI() string {
                 "default": "foobarbaz",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -532,6 +560,13 @@ func (s Handler) OpenAPI() string {
                 "default": "foobarbaz",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -605,6 +640,13 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "default": "foobarbaz",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
                 "type": "string"
               }
             }
@@ -687,6 +729,13 @@ func (s Handler) OpenAPI() string {
                 "default": "foobarbaz",
                 "type": "string"
               }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
+                "type": "string"
+              }
             }
           ],
           "requestBody": {
@@ -758,6 +807,13 @@ func (s Handler) OpenAPI() string {
               "required": true,
               "schema": {
                 "default": "foobarbaz",
+                "type": "string"
+              }
+            },
+            {
+              "in": "query",
+              "name": "uuid",
+              "schema": {
                 "type": "string"
               }
             }
