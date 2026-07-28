@@ -79,6 +79,22 @@ type fileManyInput struct {
 	Files []*core.File `in:"form=file"`
 }
 
+// fileWithFormInput mixes a file upload with plain form fields, forcing the whole
+// body to be multipart.
+type fileWithFormInput struct {
+	File *core.File `in:"form=file"`
+	// Name of the uploaded entity.
+	Name string   `in:"form=name;required"`
+	Tags []string `in:"form=tags"`
+}
+
+// formOnlyInput has no files, so it's an urlencoded form.
+type formOnlyInput struct {
+	Name    string `in:"form=name;required"`
+	Retries int    `in:"form=retries;default=3"`
+	DryRun  bool   `in:"form=dry_run"`
+}
+
 // IterateProducts comment
 // Includes imported package
 func (h Handler) iterateProducts(r *http.Request, req iterateRequest) (*test2.IterateResponse, error) {
@@ -90,6 +106,14 @@ func (h Handler) fileInput(r *http.Request, req fileInput) (interface{}, error) 
 }
 
 func (h Handler) fileManyInput(r *http.Request, req fileManyInput) (interface{}, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) fileWithFormInput(r *http.Request, req fileWithFormInput) (interface{}, error) {
+	return nil, errors.New("NIH")
+}
+
+func (h Handler) formOnlyInput(r *http.Request, req formOnlyInput) (interface{}, error) {
 	return nil, errors.New("NIH")
 }
 

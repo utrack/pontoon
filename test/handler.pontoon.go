@@ -500,6 +500,109 @@ func (s Handler) OpenAPI() string {
           ]
         }
       },
+      "/v1/test/request/file-with-form": {
+        "post": {
+          "operationId": "v1_test_request_file-with-form_post",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "properties": {
+                    "file": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "format": "binary",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "Of the uploaded entity.",
+                      "type": "string"
+                    },
+                    "tags": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true,
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
+      "/v1/test/request/form-only": {
+        "post": {
+          "operationId": "v1_test_request_form-only_post",
+          "requestBody": {
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "properties": {
+                    "dry_run": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "retries": {
+                      "default": "3",
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              },
+              "description": "success"
+            },
+            "default": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "test.Handler"
+          ]
+        }
+      },
       "/v1/test/request/jsonWithDirective": {
         "get": {
           "operationId": "v1_test_request_jsonwithdirective_get",

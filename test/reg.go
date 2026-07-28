@@ -26,4 +26,6 @@ func (h Handler) RegisterHTTP(mux sdesc.HTTPRouter) {
 
 	mux.MethodFunc(http.MethodPost, "/v1/test/request/file", h.fileInput)
 	mux.MethodFunc(http.MethodPost, "/v1/test/request/file-many", h.fileManyInput)
+	mux.MethodFunc(http.MethodPost, "/v1/test/request/file-with-form", h.fileWithFormInput)
+	mux.MethodFunc(http.MethodPost, "/v1/test/request/form-only", h.formOnlyInput)
 }

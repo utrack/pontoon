@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -19,6 +20,16 @@ const (
 	lHeader = "header"
 	lForm   = "form"
 	lPath   = "path"
+)
+
+// Media types that can carry httpin's 'form'-sourced fields.
+//
+// httpin reads form values from both urlencoded and multipart bodies
+// (https://ggicci.github.io/httpin/directives/form), but file uploads are
+// multipart-only (https://ggicci.github.io/httpin/advanced/upload-files).
+const (
+	mtFormURLEncoded = "application/x-www-form-urlencoded"
+	mtFormMultipart  = "multipart/form-data"
 )
 
 func genOpenAPI(ss []serviceDesc, pkgName string) ([]byte, error) {
@@ -204,53 +215,82 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 				WithDescription(doc)
 			sc.AddParameter(q)
 		case "form":
-			t := f.t
-			if f.t.isPtr != nil {
-				t = f.t.isPtr
-			}
-
-			isSliceOfFiles := t.isSlice != nil && t.isSlice.t.isPtr != nil && t.isSlice.t.isPtr.isSpecial == specialTypeFile
-			if t.isSpecial != specialTypeFile &&
-				!isSliceOfFiles {
-				return errors.Errorf("don't know how to render non-multipart forms yet, field '%v', type '%v'. Files should be either *core.File or []*core.File", f.name, f.t.typeName)
-			}
-
-			// TODO this generates ONLY multipart/form-data!
-			if sc.RequestBody == nil {
-				sc.RequestBody = &openapi3.RequestBodyRef{}
-			}
-
-			var curMediaSchema *openapi3.SchemaRef
-
-			if sc.RequestBody.Value != nil &&
-				sc.RequestBody.Value.Content != nil {
-				curMedia := sc.RequestBody.Value.Content.Get("multipart/form-data")
-				if curMedia != nil {
-					curMediaSchema = curMedia.Schema
-				}
-			}
-
-			if curMediaSchema == nil {
-				curMediaSchema = openapi3.NewObjectSchema().NewRef()
-				curMediaSchema.Value = &openapi3.Schema{}
-			}
-
-			if curMediaSchema.Value.Properties == nil {
-				curMediaSchema.Value.Properties = openapi3.Schemas{}
-			}
-			curMediaSchema.Value.Type = openapi3.TypeObject
-
-			curMediaSchema.Value.Properties[props.name] = fs
-
-			sc.RequestBody.Value = openapi3.
-				NewRequestBody().
-				WithFormDataSchemaRef(curMediaSchema)
-
+			addFormField(sc, props, fs, isFileType(f.t), doc)
 		default:
 			return errors.Errorf("unknown in source type '%v' for field '%v'", props.location, f.name)
 		}
 	}
 	return nil
+}
+
+// isFileType reports whether the type describes an httpin file upload,
+// i.e. *core.File or []*core.File.
+func isFileType(t *typeDesc) bool {
+	if t.isPtr != nil {
+		t = t.isPtr
+	}
+	if t.isSpecial == specialTypeFile {
+		return true
+	}
+	if t.isSlice == nil {
+		return false
+	}
+	el := t.isSlice.t
+	if el.isPtr != nil {
+		el = el.isPtr
+	}
+	return el.isSpecial == specialTypeFile
+}
+
+// addFormField merges a single 'form'-sourced field into the operation's request
+// body, creating the form schema if it's not there yet.
+//
+// The body stays application/x-www-form-urlencoded until a file field shows up;
+// files force the whole body - including its non-file fields - to be rendered as
+// multipart/form-data, since that's the only encoding httpin can read them from.
+func addFormField(sc *openapi3.Operation, props *inProps, fs *openapi3.SchemaRef, isFile bool, doc string) {
+	mediaType, schema := curFormSchema(sc)
+	if schema == nil || schema.Value == nil {
+		schema = openapi3.NewSchemaRef("", openapi3.NewObjectSchema())
+	}
+	if isFile || mediaType == mtFormMultipart {
+		mediaType = mtFormMultipart
+	} else {
+		mediaType = mtFormURLEncoded
+	}
+
+	if fs.Value != nil && fs.Value.Description == "" {
+		fs.Value.Description = doc
+	}
+	schema.Value.Properties[props.name] = fs
+	if props.required && !slices.Contains(schema.Value.Required, props.name) {
+		schema.Value.Required = append(schema.Value.Required, props.name)
+	}
+
+	if sc.RequestBody == nil {
+		sc.RequestBody = &openapi3.RequestBodyRef{}
+	}
+	if sc.RequestBody.Value == nil {
+		sc.RequestBody.Value = openapi3.NewRequestBody()
+	}
+	// the media type may have just changed from urlencoded to multipart, so the
+	// content is rebuilt from scratch instead of being amended
+	sc.RequestBody.Value.Content = openapi3.NewContentWithSchemaRef(schema, []string{mediaType})
+}
+
+// curFormSchema returns the form schema rendered for the operation so far, if
+// any, along with the media type carrying it.
+func curFormSchema(sc *openapi3.Operation) (string, *openapi3.SchemaRef) {
+	if sc.RequestBody == nil || sc.RequestBody.Value == nil {
+		return "", nil
+	}
+	for _, mt := range []string{mtFormMultipart, mtFormURLEncoded} {
+		// indexing directly since Content.Get falls back to the '*/*' wildcard
+		if media := sc.RequestBody.Value.Content[mt]; media != nil {
+			return mt, media.Schema
+		}
+	}
+	return "", nil
 }
 
 func genFieldSchema(f descField) (*openapi3.SchemaRef, error) {
