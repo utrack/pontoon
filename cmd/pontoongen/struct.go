@@ -27,6 +27,13 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	if tt.String() == "github.com/google/uuid.UUID" {
 		return &typeDesc{isScalar: true, id: "string", typeName: "string"}, nil
 	}
+	if tt.String() == "encoding/json.RawMessage" {
+		return &typeDesc{
+			id:       "any",
+			typeName: "any",
+			isAny:    true,
+		}, nil
+	}
 	switch t := tt.(type) {
 	case *types.Basic:
 		return &typeDesc{isScalar: true, id: t.Name(), typeName: t.Name()}, nil
@@ -81,13 +88,6 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		case *types.Map:
 			return b.getTypeDescCached(tu)
 		case *types.Slice:
-			if t.String() == "encoding/json.RawMessage" {
-				return &typeDesc{
-					id:       "any",
-					typeName: "any",
-					isAny:    true,
-				}, nil
-			}
 			return b.getTypeDescCached(tu)
 		case *types.Interface:
 			if t.String() == "mime/multipart.File" {
