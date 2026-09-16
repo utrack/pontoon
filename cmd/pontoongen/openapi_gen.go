@@ -166,8 +166,11 @@ func genInSchema(t *typeDesc, sc *openapi3.Operation) error {
 	}
 
 	for _, f := range t.isStruct.embeds {
-		err := genInSchema(f.t, sc)
-		if err != nil {
+		embeddedType := indirectTypeDesc(f.t)
+		if embeddedType.isStruct == nil {
+			continue
+		}
+		if err := genInSchema(embeddedType, sc); err != nil {
 			return err
 		}
 	}
@@ -387,11 +390,12 @@ func genRefFieldStruct(t *typeDesc) (*openapi3.SchemaRef, error) {
 	sc.Description = docFromComment(t.typeName, "", t.doc)
 
 	for _, e := range t.isStruct.embeds {
-		ref, err := genFieldSchema(e)
-		if err != nil {
+		if genJSONFieldName(e.name, e.tags) == "-" {
+			continue
+		}
+		if err := addEmbeddedFieldSchema(sc, e); err != nil {
 			return nil, errors.Wrapf(err, "processing embedded field '%v'", e.name)
 		}
-		sc.AllOf = append(sc.AllOf, openapi3.NewSchemaRef(ref.Ref, nil))
 	}
 
 	for _, f := range t.isStruct.fields {
@@ -460,15 +464,73 @@ func genInProps(tags string) *inProps {
 	return ret
 }
 
-func genJSONFieldName(name, tags string) string {
+type jsonFieldTag struct {
+	name    string
+	hasName bool
+	embed   bool
+}
+
+func parseJSONFieldTag(name, tags string) jsonFieldTag {
 	tags = strings.Trim(tags, "`")
-	tag := reflect.StructTag(tags)
-	ret := tag.Get("json")
-	ret = strings.TrimSuffix(ret, ",omitempty")
-	if ret != "" {
-		return ret
+	tagValue := reflect.StructTag(tags).Get("json")
+	parts := strings.Split(tagValue, ",")
+	ret := jsonFieldTag{name: name}
+	if parts[0] != "" {
+		ret.name = parts[0]
+		ret.hasName = true
 	}
-	return name
+	for _, option := range parts[1:] {
+		if option == "embed" {
+			ret.embed = true
+		}
+	}
+	return ret
+}
+
+func genJSONFieldName(name, tags string) string {
+	return parseJSONFieldTag(name, tags).name
+}
+
+func isJSONEmbeddedField(goEmbedded bool, tag jsonFieldTag) bool {
+	return goEmbedded && !tag.hasName || supportsJSONV2Embed && tag.embed
+}
+
+func indirectTypeDesc(t *typeDesc) *typeDesc {
+	for t.isPtr != nil {
+		t = t.isPtr
+	}
+	return t
+}
+
+func addEmbeddedFieldSchema(sc *openapi3.Schema, f descField) error {
+	t := indirectTypeDesc(f.t)
+	switch {
+	case t.isStruct != nil:
+		ref, err := genRefFieldStruct(t)
+		if err != nil {
+			return err
+		}
+		sc.AllOf = append(sc.AllOf, openapi3.NewSchemaRef(ref.Ref, nil))
+		return nil
+	case t.isMap != nil:
+		if sc.AdditionalProperties != nil || sc.AdditionalPropertiesAllowed != nil {
+			return errors.New("multiple embedded fallback fields")
+		}
+		ref, err := genFieldSchema(descField{t: t.isMap.value})
+		if err != nil {
+			return err
+		}
+		sc.AdditionalProperties = ref
+		return nil
+	case supportsJSONV2Embed && t.isAny && t.id == jsonTextValueTypeName:
+		if sc.AdditionalProperties != nil || sc.AdditionalPropertiesAllowed != nil {
+			return errors.New("multiple embedded fallback fields")
+		}
+		sc.WithAnyAdditionalProperties()
+		return nil
+	default:
+		return errors.Errorf("type '%v' cannot be JSON embedded", t.typeName)
+	}
 }
 
 func genRefFieldAny(t *typeDesc) (*openapi3.SchemaRef, error) {

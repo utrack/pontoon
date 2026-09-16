@@ -23,13 +23,15 @@ func (b *builder) getTypeDescCached(tt types.Type) (*typeDesc, error) {
 	return ret, err
 }
 
+const jsonTextValueTypeName = "encoding/json/jsontext.Value"
+
 func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 	if tt.String() == "github.com/google/uuid.UUID" {
 		return &typeDesc{isScalar: true, id: "string", typeName: "string"}, nil
 	}
-	if tt.String() == "encoding/json.RawMessage" {
+	if tt.String() == "encoding/json.RawMessage" || (supportsJSONV2Embed && tt.String() == jsonTextValueTypeName) {
 		return &typeDesc{
-			id:       "any",
+			id:       tt.String(),
 			typeName: "any",
 			isAny:    true,
 		}, nil
@@ -149,6 +151,7 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		f := st.Field(i)
 
 		fd := descField{
+			name: f.Name(),
 			doc:  docs.DocsByFields[f.Name()],
 			tags: st.Tag(i),
 		}
@@ -158,12 +161,12 @@ func (b *builder) getTypeDesc(tt types.Type) (*typeDesc, error) {
 		}
 		fd.t = ft
 
-		if f.Embedded() {
+		jsonTag := parseJSONFieldTag(fd.name, fd.tags)
+		if isJSONEmbeddedField(f.Embedded(), jsonTag) {
 			ret.isStruct.embeds = append(ret.isStruct.embeds, fd)
 			continue
 		}
 
-		fd.name = f.Name()
 		ret.isStruct.fields = append(ret.isStruct.fields, fd)
 	}
 	return &ret, nil
